@@ -3,8 +3,52 @@ const path = require('path');
 require('dotenv').config();
 
 const { initializeBackend } = require('./src/backend/ipc-handlers');
+const licenseService = require('./src/backend/license-service');
 
 let mainWindow;
+let licenseWindow;
+
+function createLicenseWindow() {
+  licenseWindow = new BrowserWindow({
+    width: 600,
+    height: 750,
+    minWidth: 500,
+    minHeight: 650,
+    resizable: true,
+    frame: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
+    },
+    backgroundColor: '#1e1e1e',
+    show: false,
+    icon: path.join(__dirname, 'assets', 'icon.png')
+  });
+
+  licenseWindow.loadFile('dist/license.html');
+
+  licenseWindow.once('ready-to-show', () => {
+    licenseWindow.show();
+  });
+
+  licenseWindow.on('closed', () => {
+    licenseWindow = null;
+    // If license window is closed without activation, quit app
+    if (!mainWindow) {
+      app.quit();
+    }
+  });
+}
+
+// Handle successful license activation
+ipcMain.on('license:activated', () => {
+  if (licenseWindow) {
+    licenseWindow.close();
+    licenseWindow = null;
+  }
+  createWindow();
+});
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -46,8 +90,17 @@ function createWindow() {
 }
 
 // App lifecycle
-app.whenReady().then(() => {
-  createWindow();
+app.whenReady().then(async () => {
+  // Check license before creating main window
+  const licenseCheck = await licenseService.checkLicense();
+  
+  if (!licenseCheck.valid) {
+    // Show license activation window
+    createLicenseWindow();
+  } else {
+    // License is valid, create main window
+    createWindow();
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

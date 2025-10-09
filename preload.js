@@ -54,5 +54,17 @@ contextBridge.exposeInMainWorld('api', {
   system: {
     getVersion: () => ipcRenderer.invoke('system:getVersion'),
     checkForUpdates: () => ipcRenderer.invoke('system:checkForUpdates')
-  }
+  },
+
+  // License
+  license: {
+    check: () => ipcRenderer.invoke('license:check'),
+    activate: (licenseKey, email) => ipcRenderer.invoke('license:activate', { licenseKey, email }),
+    deactivate: () => ipcRenderer.invoke('license:deactivate'),
+    getInfo: () => ipcRenderer.invoke('license:getInfo'),
+    getHardwareId: () => ipcRenderer.invoke('license:getHardwareId')
+  },
+
+  // Notify main process of license activation
+  licenseActivated: () => ipcRenderer.send('license:activated')
 });

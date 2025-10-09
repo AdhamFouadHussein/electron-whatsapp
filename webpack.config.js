@@ -1,10 +1,15 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: './src/renderer/index.js',
+  entry: {
+    main: './src/renderer/index.js',
+    license: './src/license-entry.jsx'
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: '[name].bundle.js',
+    clean: true
   },
   module: {
     rules: [
@@ -24,6 +29,18 @@ module.exports = {
       }
     ]
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './index.html',
+      filename: 'index.html',
+      chunks: ['main']
+    }),
+    new HtmlWebpackPlugin({
+      template: './license.html',
+      filename: 'license.html',
+      chunks: ['license']
+    })
+  ],
   resolve: {
     extensions: ['.js', '.jsx']
   },

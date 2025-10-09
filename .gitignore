@@ -4,3 +4,5 @@ whatsapp-session/
 .env
 *.md
 *.sh
+release/
+.DS_Store

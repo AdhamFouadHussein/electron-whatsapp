@@ -3,6 +3,7 @@ const { testConnection, initializeDatabase } = require('./database');
 const dbOps = require('./db-operations');
 const whatsappService = require('./whatsapp-service');
 const reminderScheduler = require('./reminder-scheduler');
+const licenseService = require('./license-service');
 const fs = require('fs');
 const path = require('path');
 
@@ -200,6 +201,27 @@ ipcMain.handle('system:getVersion', async () => {
 ipcMain.handle('system:checkForUpdates', async () => {
   // Placeholder for auto-updater
   return { available: false };
+});
+
+// License IPC handlers
+ipcMain.handle('license:check', async () => {
+  return await licenseService.checkLicense();
+});
+
+ipcMain.handle('license:activate', async (event, { licenseKey, email }) => {
+  return await licenseService.activateLicense(licenseKey, email);
+});
+
+ipcMain.handle('license:deactivate', async () => {
+  return await licenseService.deactivateLicense();
+});
+
+ipcMain.handle('license:getInfo', async () => {
+  return await licenseService.getLicenseInfo();
+});
+
+ipcMain.handle('license:getHardwareId', async () => {
+  return await licenseService.getHardwareId();
 });
 
 module.exports = { initializeBackend };
