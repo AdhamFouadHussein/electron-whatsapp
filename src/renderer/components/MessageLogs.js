@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { 
+  FiDownload, 
+  FiFilter, 
+  FiX, 
+  FiEye, 
+  FiMail, 
+  FiClock, 
+  FiGift, 
+  FiEdit3,
+  FiFileText,
+  FiPaperclip,
+  FiAlertTriangle
+} from 'react-icons/fi';
 
 function MessageLogs() {
   const { t } = useTranslation();
@@ -56,11 +69,11 @@ function MessageLogs() {
 
   const getTypeIcon = (type) => {
     const icons = {
-      reminder: '⏰',
-      birthday: '🎂',
-      manual: '✉️'
+      reminder: <FiClock />,
+      birthday: <FiGift />,
+      manual: <FiEdit3 />
     };
-    return icons[type] || '📧';
+    return icons[type] || <FiMail />;
   };
 
   const formatDateTime = (dateString) => {
@@ -117,13 +130,14 @@ function MessageLogs() {
     <div>
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">{t('nav.logs')}</h2>
+          <h2 className="card-title">{t('messageLogs.title')}</h2>
           <button 
             className="btn btn-primary" 
             onClick={exportLogs}
             disabled={filteredLogs.length === 0}
           >
-            📥 Export CSV
+            <FiDownload style={{ marginRight: '5px' }} />
+            {t('messageLogs.exportCsv')}
           </button>
         </div>
 
@@ -140,7 +154,7 @@ function MessageLogs() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Total Messages</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('messageLogs.totalMessages')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: 'var(--accent)' }}>
               {filteredLogs.length}
             </div>
@@ -151,7 +165,7 @@ function MessageLogs() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Sent Successfully</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('messageLogs.sentSuccessfully')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: '#4CAF50' }}>
               {totalSent}
             </div>
@@ -162,7 +176,7 @@ function MessageLogs() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Failed</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('messageLogs.failed')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: '#F44336' }}>
               {totalFailed}
             </div>
@@ -173,7 +187,7 @@ function MessageLogs() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Success Rate</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('messageLogs.successRate')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: successRate >= 90 ? '#4CAF50' : '#FF9800' }}>
               {successRate}%
             </div>
@@ -183,13 +197,16 @@ function MessageLogs() {
         {/* Filters */}
         <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <div style={{ flex: '1', minWidth: '200px' }}>
-            <label className="form-label">{t('common.filter')} by User</label>
+            <label className="form-label">
+              <FiFilter style={{ marginRight: '5px' }} />
+              {t('common.filter')} by {t('messageLogs.user')}
+            </label>
             <select
               className="form-select"
               value={filterUser}
               onChange={(e) => setFilterUser(e.target.value)}
             >
-              <option value="">All Users</option>
+              <option value="">{t('messageLogs.allUsers')}</option>
               {users.map(user => (
                 <option key={user.id} value={user.id}>{user.name}</option>
               ))}
@@ -197,29 +214,35 @@ function MessageLogs() {
           </div>
 
           <div style={{ flex: '1', minWidth: '200px' }}>
-            <label className="form-label">{t('common.filter')} by Status</label>
+            <label className="form-label">
+              <FiFilter style={{ marginRight: '5px' }} />
+              {t('common.filter')} by {t('messageLogs.status')}
+            </label>
             <select
               className="form-select"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
-              <option value="">All Statuses</option>
-              <option value="sent">✅ Sent</option>
-              <option value="failed">❌ Failed</option>
+              <option value="">{t('messageLogs.allStatuses')}</option>
+              <option value="sent">{t('messageLogs.statuses.sent')}</option>
+              <option value="failed">{t('messageLogs.statuses.failed')}</option>
             </select>
           </div>
 
           <div style={{ flex: '1', minWidth: '200px' }}>
-            <label className="form-label">{t('common.filter')} by Type</label>
+            <label className="form-label">
+              <FiFilter style={{ marginRight: '5px' }} />
+              {t('common.filter')} by {t('messageLogs.type')}
+            </label>
             <select
               className="form-select"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
             >
-              <option value="">All Types</option>
-              <option value="reminder">⏰ Reminder</option>
-              <option value="birthday">🎂 Birthday</option>
-              <option value="manual">✉️ Manual</option>
+              <option value="">{t('messageLogs.allTypes')}</option>
+              <option value="reminder">{t('messageLogs.messageTypes.reminder')}</option>
+              <option value="birthday">{t('messageLogs.messageTypes.birthday')}</option>
+              <option value="manual">{t('messageLogs.messageTypes.manual')}</option>
             </select>
           </div>
 
@@ -229,7 +252,8 @@ function MessageLogs() {
                 className="btn btn-secondary"
                 onClick={() => { setFilterUser(''); setFilterStatus(''); setFilterType(''); }}
               >
-                Clear Filters
+                <FiX style={{ marginRight: '5px' }} />
+                {t('messageLogs.clearFilters')}
               </button>
             </div>
           )}
@@ -241,14 +265,14 @@ function MessageLogs() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Type</th>
-                  <th>User</th>
-                  <th>Phone</th>
-                  <th>Status</th>
-                  <th>Language</th>
-                  <th>Sent At</th>
-                  <th>Message Preview</th>
-                  <th>Actions</th>
+                  <th>{t('messageLogs.type')}</th>
+                  <th>{t('messageLogs.user')}</th>
+                  <th>{t('messageLogs.phone')}</th>
+                  <th>{t('messageLogs.status')}</th>
+                  <th>{t('messageLogs.language')}</th>
+                  <th>{t('messageLogs.sentAt')}</th>
+                  <th>{t('messageLogs.messagePreview')}</th>
+                  <th>{t('messageLogs.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -257,7 +281,7 @@ function MessageLogs() {
                   .map((log) => (
                     <tr key={log.id}>
                       <td>
-                        <span style={{ fontSize: '20px' }} title={log.message_type}>
+                        <span style={{ fontSize: '16px', color: 'var(--accent)' }} title={t(`messageLogs.messageTypes.${log.message_type}`)}>
                           {getTypeIcon(log.message_type)}
                         </span>
                       </td>
@@ -295,9 +319,10 @@ function MessageLogs() {
                           className="btn btn-secondary"
                           style={{ padding: '6px 12px', fontSize: '13px' }}
                           onClick={() => viewDetails(log)}
-                          title="View full message"
+                          title={t('messageLogs.viewFullMessage')}
                         >
-                          👁️ View
+                          <FiEye style={{ marginRight: '4px' }} />
+                          {t('common.view')}
                         </button>
                       </td>
                     </tr>
@@ -311,9 +336,11 @@ function MessageLogs() {
             padding: '40px', 
             color: 'var(--text-secondary)' 
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '10px' }}>📋</div>
-            <div style={{ fontSize: '18px', marginBottom: '10px' }}>No message logs found</div>
-            <div style={{ fontSize: '14px' }}>Messages will appear here once sent</div>
+            <div style={{ fontSize: '48px', marginBottom: '10px' }}>
+              <FiFileText style={{ color: 'var(--text-tertiary)' }} />
+            </div>
+            <div style={{ fontSize: '18px', marginBottom: '10px' }}>{t('messageLogs.noLogsFound')}</div>
+            <div style={{ fontSize: '14px' }}>{t('messageLogs.messagesWillAppear')}</div>
           </div>
         )}
       </div>
@@ -323,9 +350,12 @@ function MessageLogs() {
         <div className="modal-overlay">
           <div className="modal" style={{ maxWidth: '700px' }}>
             <div className="modal-header">
-              <h3 className="modal-title">📧 Message Details</h3>
+              <h3 className="modal-title">
+                <FiMail style={{ marginRight: '8px' }} />
+                {t('messageLogs.messageDetails')}
+              </h3>
               <button className="modal-close" onClick={() => setSelectedLog(null)}>
-                ×
+                <FiX />
               </button>
             </div>
 
@@ -337,16 +367,21 @@ function MessageLogs() {
                 gap: '12px',
                 marginBottom: '20px'
               }}>
-                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Type:</div>
-                <div>{getTypeIcon(selectedLog.message_type)} {selectedLog.message_type}</div>
+                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>{t('messageLogs.type')}:</div>
+                <div>
+                  <span style={{ marginRight: '8px', color: 'var(--accent)' }}>
+                    {getTypeIcon(selectedLog.message_type)}
+                  </span>
+                  {t(`messageLogs.messageTypes.${selectedLog.message_type}`)}
+                </div>
 
-                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>User:</div>
+                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>{t('messageLogs.user')}:</div>
                 <div>{selectedLog.user_name || 'N/A'}</div>
 
-                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Phone:</div>
+                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>{t('messageLogs.phone')}:</div>
                 <div style={{ fontFamily: 'monospace' }}>{selectedLog.phone}</div>
 
-                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Status:</div>
+                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>{t('messageLogs.status')}:</div>
                 <div>
                   <span style={{ 
                     display: 'inline-block',
@@ -361,23 +396,29 @@ function MessageLogs() {
                   </span>
                 </div>
 
-                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Language:</div>
+                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>{t('messageLogs.language')}:</div>
                 <div>{selectedLog.language ? selectedLog.language.toUpperCase() : 'N/A'}</div>
 
-                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Sent At:</div>
+                <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>{t('messageLogs.sentAt')}:</div>
                 <div>{formatDateTime(selectedLog.sent_at)}</div>
 
                 {selectedLog.file_id && (
                   <>
-                    <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Attachment:</div>
-                    <div>📎 File attached</div>
+                    <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>{t('messageLogs.attachment')}:</div>
+                    <div>
+                      <FiPaperclip style={{ marginRight: '5px', color: '#4CAF50' }} />
+                      {t('messageLogs.fileAttached')}
+                    </div>
                   </>
                 )}
 
                 {selectedLog.error_message && (
                   <>
-                    <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Error:</div>
-                    <div style={{ color: '#F44336' }}>{selectedLog.error_message}</div>
+                    <div style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>{t('messageLogs.errorMessage')}:</div>
+                    <div style={{ color: '#F44336' }}>
+                      <FiAlertTriangle style={{ marginRight: '5px' }} />
+                      {selectedLog.error_message}
+                    </div>
                   </>
                 )}
               </div>
@@ -385,7 +426,7 @@ function MessageLogs() {
               {/* Message Content */}
               <div style={{ marginTop: '20px' }}>
                 <div style={{ fontWeight: '600', marginBottom: '10px', color: 'var(--text-secondary)' }}>
-                  Message Content:
+                  {t('messageLogs.messageContent')}:
                 </div>
                 <div style={{
                   backgroundColor: 'var(--bg-tertiary)',

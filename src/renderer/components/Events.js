@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { 
+  FiPlus, 
+  FiEdit2, 
+  FiTrash2, 
+  FiCheck, 
+  FiX, 
+  FiSave, 
+  FiCalendar,
+  FiClock,
+  FiUsers,
+  FiFilter,
+  FiAlertCircle,
+  FiBell,
+  FiBellOff
+} from 'react-icons/fi';
 
 function Events() {
   const { t } = useTranslation();
@@ -167,22 +182,22 @@ function Events() {
     const diff = eventDate - now;
     
     if (diff < 0) {
-      return { text: 'Past', color: '#757575' };
+      return { text: t('common.past'), color: '#757575' };
     }
     
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     
     if (days > 7) {
-      return { text: `${days} days`, color: '#4CAF50' };
+      return { text: `${days} ${t('common.days')}`, color: '#4CAF50' };
     } else if (days > 1) {
-      return { text: `${days} days`, color: '#FF9800' };
+      return { text: `${days} ${t('common.days')}`, color: '#FF9800' };
     } else if (days === 1) {
-      return { text: 'Tomorrow', color: '#FF9800' };
+      return { text: t('common.tomorrow'), color: '#FF9800' };
     } else if (hours > 2) {
-      return { text: `${hours} hours`, color: '#F44336' };
+      return { text: `${hours} ${t('common.hours')}`, color: '#F44336' };
     } else {
-      return { text: 'Soon!', color: '#F44336' };
+      return { text: t('common.soon'), color: '#F44336' };
     }
   };
 
@@ -203,20 +218,20 @@ function Events() {
             className="btn btn-primary" 
             onClick={() => { resetForm(); setShowModal(true); }}
           >
-            ➕ {t('events.addEvent')}
+            <FiPlus style={{ marginRight: '5px' }} /> {t('events.addEvent')}
           </button>
         </div>
 
         {/* Filters */}
         <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <div style={{ flex: '1', minWidth: '200px' }}>
-            <label className="form-label">{t('common.filter')} by User</label>
+            <label className="form-label">{t('common.filter')} by {t('events.user')}</label>
             <select
               className="form-select"
               value={filterUserId}
               onChange={(e) => setFilterUserId(e.target.value)}
             >
-              <option value="">All Users</option>
+              <option value="">{t('events.allUsers')}</option>
               {users.map(user => (
                 <option key={user.id} value={user.id}>{user.name}</option>
               ))}
@@ -224,13 +239,13 @@ function Events() {
           </div>
 
           <div style={{ flex: '1', minWidth: '200px' }}>
-            <label className="form-label">{t('common.filter')} by Type</label>
+            <label className="form-label">{t('common.filter')} by {t('events.eventType')}</label>
             <select
               className="form-select"
               value={filterEventType}
               onChange={(e) => setFilterEventType(e.target.value)}
             >
-              <option value="">All Types</option>
+              <option value="">{t('events.allTypes')}</option>
               <option value="meeting">{getEventTypeLabel('meeting')}</option>
               <option value="embassy">{getEventTypeLabel('embassy')}</option>
               <option value="flight">{getEventTypeLabel('flight')}</option>
@@ -245,7 +260,8 @@ function Events() {
                 className="btn btn-secondary"
                 onClick={() => { setFilterUserId(''); setFilterEventType(''); }}
               >
-                Clear Filters
+                <FiX style={{ marginRight: '5px' }} />
+                {t('events.clearFilters')}
               </button>
             </div>
           )}
@@ -264,7 +280,7 @@ function Events() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Total Events</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('events.totalEvents')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: 'var(--accent)' }}>
               {filteredEvents.length}
             </div>
@@ -275,7 +291,7 @@ function Events() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Upcoming</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('events.upcoming')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: '#4CAF50' }}>
               {upcomingEvents.length}
             </div>
@@ -286,7 +302,7 @@ function Events() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Past</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('events.past')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: '#757575' }}>
               {pastEvents.length}
             </div>
@@ -297,19 +313,20 @@ function Events() {
         {upcomingEvents.length > 0 && (
           <>
             <h3 style={{ marginTop: '20px', marginBottom: '15px', fontSize: '18px', fontWeight: '600' }}>
-              📅 Upcoming Events
+              <FiCalendar style={{ marginRight: '8px' }} />
+              {t('events.upcomingEvents')}
             </h3>
             <div style={{ overflowX: 'auto' }}>
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Type</th>
+                    <th>{t('events.eventType')}</th>
                     <th>{t('events.eventTitle')}</th>
                     <th>{t('events.user')}</th>
                     <th>{t('events.eventDate')}</th>
-                    <th>Time Until</th>
+                    <th>{t('events.timeUntil')}</th>
                     <th>{t('events.location')}</th>
-                    <th>Reminder</th>
+                    <th>{t('reminders.title')}</th>
                     <th>{t('users.actions')}</th>
                   </tr>
                 </thead>
@@ -349,9 +366,9 @@ function Events() {
                             <span style={{ 
                               fontSize: '18px',
                               cursor: 'help',
-                              title: event.reminder_enabled ? 'Reminder enabled' : 'No reminder'
+                              title: event.reminder_enabled ? t('events.reminderEnabledTooltip') : t('events.noReminderTooltip')
                             }}>
-                              {event.reminder_enabled ? '✅' : '❌'}
+                              {event.reminder_enabled ? <FiBell color="#4CAF50" /> : <FiBellOff color="#757575" />}
                             </span>
                           </td>
                           <td>
@@ -361,7 +378,7 @@ function Events() {
                               onClick={() => handleEdit(event)}
                               title={t('common.edit')}
                             >
-                              ✏️
+                              <FiEdit2 />
                             </button>
                             <button 
                               className="btn btn-danger" 
@@ -369,7 +386,7 @@ function Events() {
                               onClick={() => handleDelete(event)}
                               title={t('common.delete')}
                             >
-                              🗑️
+                              <FiTrash2 />
                             </button>
                           </td>
                         </tr>
@@ -385,13 +402,14 @@ function Events() {
         {pastEvents.length > 0 && (
           <>
             <h3 style={{ marginTop: '30px', marginBottom: '15px', fontSize: '18px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-              📋 Past Events
+              <FiClock style={{ marginRight: '8px' }} />
+              {t('events.pastEvents')}
             </h3>
             <div style={{ overflowX: 'auto' }}>
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Type</th>
+                    <th>{t('events.eventType')}</th>
                     <th>{t('events.eventTitle')}</th>
                     <th>{t('events.user')}</th>
                     <th>{t('events.eventDate')}</th>
@@ -429,7 +447,7 @@ function Events() {
                             onClick={() => handleDelete(event)}
                             title={t('common.delete')}
                           >
-                            🗑️
+                            <FiTrash2 />
                           </button>
                         </td>
                       </tr>
@@ -446,9 +464,11 @@ function Events() {
             padding: '40px', 
             color: 'var(--text-secondary)' 
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '10px' }}>📅</div>
-            <div style={{ fontSize: '18px', marginBottom: '10px' }}>No events found</div>
-            <div style={{ fontSize: '14px' }}>Create your first event to get started!</div>
+            <div style={{ fontSize: '48px', marginBottom: '10px' }}>
+              <FiCalendar style={{ color: 'var(--text-tertiary)' }} />
+            </div>
+            <div style={{ fontSize: '18px', marginBottom: '10px' }}>{t('events.noEventsFound')}</div>
+            <div style={{ fontSize: '14px' }}>{t('events.createFirstEvent')}</div>
           </div>
         )}
       </div>
@@ -459,10 +479,20 @@ function Events() {
           <div className="modal" style={{ maxWidth: '700px' }}>
             <div className="modal-header">
               <h3 className="modal-title">
-                {editingEvent ? `✏️ ${t('events.editEvent')}` : `➕ ${t('events.addEvent')}`}
+                {editingEvent ? (
+                  <>
+                    <FiEdit2 style={{ marginRight: '8px' }} />
+                    {t('events.editEvent')}
+                  </>
+                ) : (
+                  <>
+                    <FiPlus style={{ marginRight: '8px' }} />
+                    {t('events.addEvent')}
+                  </>
+                )}
               </h3>
               <button className="modal-close" onClick={() => { setShowModal(false); resetForm(); }}>
-                ×
+                <FiX />
               </button>
             </div>
 
@@ -566,7 +596,7 @@ function Events() {
                     </span>
                   </label>
                   <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '5px', marginLeft: '28px' }}>
-                    Enable this to allow creating reminders for this event
+                    {t('events.reminderEnabledHelp')}
                   </div>
                 </div>
               </div>
@@ -577,10 +607,21 @@ function Events() {
                   className="btn btn-secondary" 
                   onClick={() => { setShowModal(false); resetForm(); }}
                 >
+                  <FiX style={{ marginRight: '5px' }} />
                   {t('common.cancel')}
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  {editingEvent ? '💾 Update Event' : '➕ Create Event'}
+                  {editingEvent ? (
+                    <>
+                      <FiSave style={{ marginRight: '5px' }} />
+                      {t('events.updateEvent')}
+                    </>
+                  ) : (
+                    <>
+                      <FiPlus style={{ marginRight: '5px' }} />
+                      {t('events.createEvent')}
+                    </>
+                  )}
                 </button>
               </div>
             </form>

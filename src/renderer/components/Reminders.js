@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { 
+  FiPlus, 
+  FiEdit2, 
+  FiTrash2, 
+  FiClock, 
+  FiCheck, 
+  FiX, 
+  FiAlertTriangle, 
+  FiSlash,
+  FiPaperclip,
+  FiSave,
+  FiFilter
+} from 'react-icons/fi';
 
 function Reminders() {
   const { t } = useTranslation();
@@ -188,7 +201,8 @@ function Reminders() {
             className="btn btn-primary" 
             onClick={() => { resetForm(); setShowModal(true); }}
           >
-            ➕ {t('reminders.addReminder')}
+            <FiPlus style={{ marginRight: '5px' }} />
+            {t('reminders.addReminder')}
           </button>
         </div>
 
@@ -205,7 +219,7 @@ function Reminders() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Pending</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('reminders.pending')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: '#FF9800' }}>
               {pendingReminders.length}
             </div>
@@ -216,7 +230,7 @@ function Reminders() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Sent</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('reminders.sent')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: '#4CAF50' }}>
               {sentReminders.length}
             </div>
@@ -227,7 +241,7 @@ function Reminders() {
             borderRadius: '8px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Failed</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{t('reminders.failed')}</div>
             <div style={{ fontSize: '28px', fontWeight: '600', color: '#F44336' }}>
               {failedReminders.length}
             </div>
@@ -236,18 +250,29 @@ function Reminders() {
 
         {/* Filter */}
         <div style={{ marginBottom: '20px' }}>
-          <label className="form-label">{t('common.filter')} by Status</label>
+          <label className="form-label">
+            <FiFilter style={{ marginRight: '5px' }} />
+            {t('common.filter')} by {t('reminders.status')}
+          </label>
           <select
             className="form-select"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             style={{ maxWidth: '300px' }}
           >
-            <option value="">All Statuses</option>
-            <option value="pending">⏳ Pending</option>
-            <option value="sent">✅ Sent</option>
-            <option value="failed">❌ Failed</option>
-            <option value="cancelled">🚫 Cancelled</option>
+            <option value="">{t('reminders.allStatuses')}</option>
+            <option value="pending">
+              {t('reminders.pending')}
+            </option>
+            <option value="sent">
+              {t('reminders.sent')}
+            </option>
+            <option value="failed">
+              {t('reminders.failed')}
+            </option>
+            <option value="cancelled">
+              {t('reminders.cancelled')}
+            </option>
           </select>
         </div>
 
@@ -257,12 +282,12 @@ function Reminders() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Status</th>
-                  <th>Event</th>
-                  <th>User</th>
-                  <th>Reminder Time</th>
-                  <th>Message Preview</th>
-                  <th>Attachment</th>
+                  <th>{t('reminders.status')}</th>
+                  <th>{t('reminders.event')}</th>
+                  <th>{t('reminders.user')}</th>
+                  <th>{t('reminders.reminderTime')}</th>
+                  <th>{t('reminders.messagePreview')}</th>
+                  <th>{t('reminders.attachment')}</th>
                   <th>{t('users.actions')}</th>
                 </tr>
               </thead>
@@ -299,11 +324,11 @@ function Reminders() {
                           whiteSpace: 'nowrap',
                           fontSize: '13px'
                         }}>
-                          {reminder.custom_message || 'Using template'}
+                          {reminder.custom_message || t('reminders.usingTemplate')}
                         </div>
                       </td>
                       <td>
-                        {reminder.file_id ? '📎' : '-'}
+                        {reminder.file_id ? <FiPaperclip color="#4CAF50" /> : '-'}
                       </td>
                       <td>
                         {reminder.status === 'pending' && (
@@ -313,7 +338,7 @@ function Reminders() {
                             onClick={() => handleEdit(reminder)}
                             title={t('common.edit')}
                           >
-                            ✏️
+                            <FiEdit2 />
                           </button>
                         )}
                         <button 
@@ -322,7 +347,7 @@ function Reminders() {
                           onClick={() => handleDelete(reminder)}
                           title={t('common.delete')}
                         >
-                          🗑️
+                          <FiTrash2 />
                         </button>
                       </td>
                     </tr>
@@ -336,9 +361,11 @@ function Reminders() {
             padding: '40px', 
             color: 'var(--text-secondary)' 
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '10px' }}>⏰</div>
-            <div style={{ fontSize: '18px', marginBottom: '10px' }}>No reminders found</div>
-            <div style={{ fontSize: '14px' }}>Create a reminder to automate notifications!</div>
+            <div style={{ fontSize: '48px', marginBottom: '10px' }}>
+              <FiClock style={{ color: 'var(--text-tertiary)' }} />
+            </div>
+            <div style={{ fontSize: '18px', marginBottom: '10px' }}>{t('reminders.noRemindersFound')}</div>
+            <div style={{ fontSize: '14px' }}>{t('reminders.createFirstReminder')}</div>
           </div>
         )}
       </div>
@@ -349,24 +376,34 @@ function Reminders() {
           <div className="modal" style={{ maxWidth: '700px' }}>
             <div className="modal-header">
               <h3 className="modal-title">
-                {editingReminder ? `✏️ ${t('reminders.editReminder')}` : `➕ ${t('reminders.addReminder')}`}
+                {editingReminder ? (
+                  <>
+                    <FiEdit2 style={{ marginRight: '8px' }} />
+                    {t('reminders.editReminder')}
+                  </>
+                ) : (
+                  <>
+                    <FiPlus style={{ marginRight: '8px' }} />
+                    {t('reminders.addReminder')}
+                  </>
+                )}
               </h3>
               <button className="modal-close" onClick={() => { setShowModal(false); resetForm(); }}>
-                ×
+                <FiX />
               </button>
             </div>
 
             <form onSubmit={handleSubmit}>
               {/* Event Selection */}
               <div className="form-group">
-                <label className="form-label">Event *</label>
+                <label className="form-label">{t('reminders.event')} *</label>
                 <select
                   className="form-select"
                   value={formData.event_id}
                   onChange={(e) => handleEventChange(e.target.value)}
                   required
                 >
-                  <option value="">{t('common.select')} event...</option>
+                  <option value="">{t('common.select')} {t('reminders.event').toLowerCase()}...</option>
                   {events.map(event => (
                     <option key={event.id} value={event.id}>
                       {event.title} - {event.user_name} ({formatDateTime(event.event_date)})
@@ -375,7 +412,7 @@ function Reminders() {
                 </select>
                 {events.length === 0 && (
                   <div style={{ fontSize: '13px', color: '#F44336', marginTop: '5px' }}>
-                    No upcoming events available. Please create an event first.
+                    {t('reminders.noUpcomingEvents')}
                   </div>
                 )}
               </div>
@@ -391,7 +428,7 @@ function Reminders() {
                   required
                 />
                 <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '5px' }}>
-                  When to send the reminder (usually before the event)
+                  {t('reminders.reminderTimeHelp')}
                 </div>
               </div>
 
@@ -403,7 +440,7 @@ function Reminders() {
                   value={formData.message_template_id}
                   onChange={(e) => setFormData({ ...formData, message_template_id: e.target.value })}
                 >
-                  <option value="">Use default template for event type</option>
+                  <option value="">{t('reminders.useDefaultTemplate')}</option>
                   {templates.map(template => (
                     <option key={template.id} value={template.id}>
                       {template.name} ({template.language})
@@ -419,11 +456,11 @@ function Reminders() {
                   className="form-textarea"
                   value={formData.custom_message}
                   onChange={(e) => setFormData({ ...formData, custom_message: e.target.value })}
-                  placeholder="Leave empty to use template. Use {{name}}, {{title}}, {{date}}, {{location}} for variables."
+                  placeholder={t('reminders.customMessagePlaceholder')}
                   rows="4"
                 />
                 <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '5px' }}>
-                  Optional: Override template with custom message
+                  {t('reminders.customMessageHelp')}
                 </div>
               </div>
 
@@ -436,16 +473,16 @@ function Reminders() {
                   onChange={(e) => setFormData({ ...formData, file_id: e.target.value })}
                   disabled={!formData.event_id}
                 >
-                  <option value="">No file attachment</option>
+                  <option value="">{t('reminders.noFileAttachment')}</option>
                   {files.map(file => (
                     <option key={file.id} value={file.id}>
-                      📎 {file.original_name} ({(file.file_size / 1024).toFixed(1)} KB)
+                      <FiPaperclip /> {file.original_name} ({(file.file_size / 1024).toFixed(1)} KB)
                     </option>
                   ))}
                 </select>
                 {formData.event_id && files.length === 0 && (
                   <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '5px' }}>
-                    No files uploaded for this user yet.
+                    {t('reminders.noFilesUploaded')}
                   </div>
                 )}
               </div>
@@ -456,10 +493,21 @@ function Reminders() {
                   className="btn btn-secondary" 
                   onClick={() => { setShowModal(false); resetForm(); }}
                 >
+                  <FiX style={{ marginRight: '5px' }} />
                   {t('common.cancel')}
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  {editingReminder ? '💾 Update' : '➕ Create Reminder'}
+                  {editingReminder ? (
+                    <>
+                      <FiSave style={{ marginRight: '5px' }} />
+                      {t('reminders.updateReminder')}
+                    </>
+                  ) : (
+                    <>
+                      <FiPlus style={{ marginRight: '5px' }} />
+                      {t('reminders.createReminder')}
+                    </>
+                  )}
                 </button>
               </div>
             </form>

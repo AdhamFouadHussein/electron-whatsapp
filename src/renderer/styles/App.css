@@ -49,9 +49,25 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
+  background-color: var(--bg-secondary);
   color: var(--text-primary);
-  transition: background-color 0.3s, color 0.3s;
+  overflow: hidden;
+}
+
+/* Icon Styles */
+.btn svg, button svg {
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.stat-icon {
+  font-size: 32px;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.sidebar-nav-item svg {
+  min-width: 20px;
 }
 
 /* App Layout */

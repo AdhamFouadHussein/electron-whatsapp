@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 
 function Users() {
   const { t } = useTranslation();
@@ -96,7 +97,7 @@ function Users() {
         <div className="card-header">
           <h2 className="card-title">{t('users.title')}</h2>
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            {t('users.addUser')}
+            <FiPlus style={{ marginRight: '5px' }} /> {t('users.addUser')}
           </button>
         </div>
 
@@ -121,10 +122,10 @@ function Users() {
                 <td>{user.preferred_language}</td>
                 <td>
                   <button className="btn btn-secondary" style={{ marginRight: '5px' }} onClick={() => handleEdit(user)}>
-                    {t('common.edit')}
+                    <FiEdit2 style={{ marginRight: '5px' }} /> {t('common.edit')}
                   </button>
                   <button className="btn btn-danger" onClick={() => handleDelete(user)}>
-                    {t('common.delete')}
+                    <FiTrash2 style={{ marginRight: '5px' }} /> {t('common.delete')}
                   </button>
                 </td>
               </tr>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FiUsers, FiCalendar, FiBell, FiMessageSquare, FiRefreshCw, FiUserPlus } from 'react-icons/fi';
 
 function Dashboard({ setCurrentView }) {
   const { t } = useTranslation();
@@ -64,21 +65,25 @@ function Dashboard({ setCurrentView }) {
       
       <div className="stats-grid">
         <div className="stat-card">
+          <FiUsers className="stat-icon" />
           <div className="stat-label">{t('dashboard.totalUsers')}</div>
           <div className="stat-value">{stats.totalUsers}</div>
         </div>
         
         <div className="stat-card">
+          <FiCalendar className="stat-icon" />
           <div className="stat-label">{t('dashboard.upcomingEvents')}</div>
           <div className="stat-value">{stats.upcomingEvents}</div>
         </div>
         
         <div className="stat-card">
+          <FiBell className="stat-icon" />
           <div className="stat-label">{t('dashboard.pendingReminders')}</div>
           <div className="stat-value">{stats.pendingReminders}</div>
         </div>
         
         <div className="stat-card">
+          <FiMessageSquare className="stat-icon" />
           <div className="stat-label">{t('dashboard.messagesSent')}</div>
           <div className="stat-value">{stats.messagesSent}</div>
         </div>
@@ -94,28 +99,28 @@ function Dashboard({ setCurrentView }) {
             onClick={() => setCurrentView('users')}
             title={t('dashboard.addUserHint')}
           >
-            👤 {t('dashboard.addUser')}
+            <FiUserPlus style={{ marginRight: '5px' }} /> {t('dashboard.addUser')}
           </button>
           <button 
             className="btn btn-primary"
             onClick={() => setCurrentView('events')}
             title={t('dashboard.scheduleEventHint')}
           >
-            📅 {t('dashboard.scheduleEvent')}
+            <FiCalendar style={{ marginRight: '5px' }} /> {t('dashboard.scheduleEvent')}
           </button>
           <button 
             className="btn btn-primary"
             onClick={() => setCurrentView('reminders')}
             title={t('dashboard.createReminderHint')}
           >
-            ⏰ {t('dashboard.createReminder')}
+            <FiBell style={{ marginRight: '5px' }} /> {t('dashboard.createReminder')}
           </button>
           <button 
             className="btn btn-secondary" 
             onClick={loadStats}
             title={t('dashboard.refreshHint')}
           >
-            🔄 {t('dashboard.refresh')}
+            <FiRefreshCw style={{ marginRight: '5px' }} /> {t('dashboard.refresh')}
           </button>
         </div>
       </div>

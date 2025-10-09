@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { 
+  FiPlus, 
+  FiEdit2, 
+  FiX, 
+  FiSave, 
+  FiFilter, 
+  FiFileText, 
+  FiGlobe, 
+  FiType,
+  FiEye
+} from 'react-icons/fi';
 
 function Templates() {
   const { t } = useTranslation();
@@ -163,33 +174,40 @@ function Templates() {
             className="btn btn-primary" 
             onClick={() => { resetForm(); setShowModal(true); }}
           >
-            ➕ {t('templates.addTemplate')}
+            <FiPlus style={{ marginRight: '5px' }} />
+            {t('templates.addTemplate')}
           </button>
         </div>
 
         {/* Filters */}
         <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <div style={{ flex: '1', minWidth: '200px' }}>
-            <label className="form-label">{t('common.filter')} by Language</label>
+            <label className="form-label">
+              <FiGlobe style={{ marginRight: '5px' }} />
+              {t('common.filter')} by {t('templates.language')}
+            </label>
             <select
               className="form-select"
               value={filterLanguage}
               onChange={(e) => setFilterLanguage(e.target.value)}
             >
-              <option value="">All Languages</option>
-              <option value="en">English</option>
-              <option value="ar">العربية</option>
+              <option value="">{t('templates.allLanguages')}</option>
+              <option value="en">{t('templates.languages.en')}</option>
+              <option value="ar">{t('templates.languages.ar')}</option>
             </select>
           </div>
 
           <div style={{ flex: '1', minWidth: '200px' }}>
-            <label className="form-label">{t('common.filter')} by Event Type</label>
+            <label className="form-label">
+              <FiType style={{ marginRight: '5px' }} />
+              {t('common.filter')} by {t('events.eventType')}
+            </label>
             <select
               className="form-select"
               value={filterEventType}
               onChange={(e) => setFilterEventType(e.target.value)}
             >
-              <option value="">All Types</option>
+              <option value="">{t('templates.allTypes')}</option>
               <option value="meeting">{getEventTypeLabel('meeting')}</option>
               <option value="embassy">{getEventTypeLabel('embassy')}</option>
               <option value="flight">{getEventTypeLabel('flight')}</option>
@@ -204,7 +222,8 @@ function Templates() {
                 className="btn btn-secondary"
                 onClick={() => { setFilterLanguage(''); setFilterEventType(''); }}
               >
-                Clear Filters
+                <FiX style={{ marginRight: '5px' }} />
+                {t('templates.clearFilters')}
               </button>
             </div>
           )}
@@ -243,7 +262,7 @@ function Templates() {
                         color: 'white',
                         fontWeight: '500'
                       }}>
-                        DEFAULT
+                        {t('templates.defaultBadge')}
                       </span>
                     )}
                   </div>
@@ -269,7 +288,8 @@ function Templates() {
                       backgroundColor: 'var(--accent)' + '20',
                       color: 'var(--accent)'
                     }}>
-                      {template.language === 'ar' ? '🇸🇦 العربية' : '🇺🇸 English'}
+                      <FiGlobe style={{ marginRight: '4px', fontSize: '10px' }} />
+                      {template.language === 'ar' ? t('templates.languages.ar') : t('templates.languages.en')}
                     </span>
                   </div>
                 </div>
@@ -295,7 +315,7 @@ function Templates() {
                 {template.variables && (
                   <div style={{ marginBottom: '15px' }}>
                     <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '5px' }}>
-                      Variables:
+                      {t('templates.variables')}:
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                       {(typeof template.variables === 'string' 
@@ -327,7 +347,8 @@ function Templates() {
                     style={{ flex: 1, padding: '8px', fontSize: '13px' }}
                     onClick={() => handleEdit(template)}
                   >
-                    ✏️ Edit
+                    <FiEdit2 style={{ marginRight: '5px' }} />
+                    {t('common.edit')}
                   </button>
                 </div>
               </div>
@@ -339,9 +360,11 @@ function Templates() {
             padding: '40px', 
             color: 'var(--text-secondary)' 
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '10px' }}>📝</div>
-            <div style={{ fontSize: '18px', marginBottom: '10px' }}>No templates found</div>
-            <div style={{ fontSize: '14px' }}>Create your first message template!</div>
+            <div style={{ fontSize: '48px', marginBottom: '10px' }}>
+              <FiFileText style={{ color: 'var(--text-tertiary)' }} />
+            </div>
+            <div style={{ fontSize: '18px', marginBottom: '10px' }}>{t('templates.noTemplatesFound')}</div>
+            <div style={{ fontSize: '14px' }}>{t('templates.createFirstTemplate')}</div>
           </div>
         )}
       </div>
@@ -352,10 +375,20 @@ function Templates() {
           <div className="modal" style={{ maxWidth: '800px' }}>
             <div className="modal-header">
               <h3 className="modal-title">
-                {editingTemplate ? `✏️ ${t('templates.editTemplate')}` : `➕ ${t('templates.addTemplate')}`}
+                {editingTemplate ? (
+                  <>
+                    <FiEdit2 style={{ marginRight: '8px' }} />
+                    {t('templates.editTemplate')}
+                  </>
+                ) : (
+                  <>
+                    <FiPlus style={{ marginRight: '8px' }} />
+                    {t('templates.addTemplate')}
+                  </>
+                )}
               </h3>
               <button className="modal-close" onClick={() => { setShowModal(false); resetForm(); }}>
-                ×
+                <FiX />
               </button>
             </div>
 
@@ -400,8 +433,8 @@ function Templates() {
                     onChange={(e) => setFormData({ ...formData, language: e.target.value })}
                     required
                   >
-                    <option value="en">🇺🇸 English</option>
-                    <option value="ar">🇸🇦 العربية</option>
+                    <option value="en">{t('templates.languages.en')}</option>
+                    <option value="ar">{t('templates.languages.ar')}</option>
                   </select>
                 </div>
 
@@ -432,7 +465,8 @@ function Templates() {
                           style={{ padding: '6px 12px', fontSize: '12px' }}
                           onClick={() => insertVariable(variable)}
                         >
-                          + {`{{${variable}}}`}
+                          <FiPlus style={{ marginRight: '4px', fontSize: '10px' }} />
+                          {`{{${variable}}}`}
                         </button>
                       ))}
                     </div>
@@ -441,7 +475,10 @@ function Templates() {
 
                 {/* Preview */}
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                  <label className="form-label">Preview (with sample data)</label>
+                  <label className="form-label">
+                    <FiEye style={{ marginRight: '5px' }} />
+                    {t('templates.preview')}
+                  </label>
                   <div style={{
                     backgroundColor: 'var(--bg-tertiary)',
                     padding: '15px',
@@ -452,7 +489,7 @@ function Templates() {
                     whiteSpace: 'pre-wrap',
                     border: '1px solid var(--border-color)'
                   }}>
-                    {previewTemplate() || 'Your preview will appear here...'}
+                    {previewTemplate() || t('templates.previewPlaceholder')}
                   </div>
                 </div>
 
@@ -470,7 +507,7 @@ function Templates() {
                     </span>
                   </label>
                   <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '5px', marginLeft: '28px' }}>
-                    Set as the default template for this event type and language
+                    {t('templates.isDefaultHelp')}
                   </div>
                 </div>
               </div>
@@ -481,10 +518,21 @@ function Templates() {
                   className="btn btn-secondary" 
                   onClick={() => { setShowModal(false); resetForm(); }}
                 >
+                  <FiX style={{ marginRight: '5px' }} />
                   {t('common.cancel')}
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  {editingTemplate ? '💾 Update Template' : '➕ Create Template'}
+                  {editingTemplate ? (
+                    <>
+                      <FiSave style={{ marginRight: '5px' }} />
+                      {t('templates.updateTemplate')}
+                    </>
+                  ) : (
+                    <>
+                      <FiPlus style={{ marginRight: '5px' }} />
+                      {t('templates.createTemplate')}
+                    </>
+                  )}
                 </button>
               </div>
             </form>
