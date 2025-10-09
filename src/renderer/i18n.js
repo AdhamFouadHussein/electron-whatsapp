@@ -26,7 +26,16 @@ const resources = {
         connected: 'Connected',
         disconnected: 'Disconnected',
         reconnecting: 'Reconnecting',
-        qrReady: 'QR Code Ready'
+        qrReady: 'QR Code Ready',
+        quickActions: 'Quick Actions',
+        addUser: 'Add User',
+        addUserHint: 'Go to Users page to add a new user',
+        scheduleEvent: 'Schedule Event',
+        scheduleEventHint: 'Go to Events page to create a new event',
+        createReminder: 'Create Reminder',
+        createReminderHint: 'Go to Reminders page to set up a new reminder',
+        refresh: 'Refresh Stats',
+        refreshHint: 'Reload dashboard statistics'
       },
       // Users
       users: {
@@ -158,7 +167,16 @@ const resources = {
         connected: 'متصل',
         disconnected: 'غير متصل',
         reconnecting: 'إعادة الاتصال',
-        qrReady: 'رمز QR جاهز'
+        qrReady: 'رمز QR جاهز',
+        quickActions: 'إجراءات سريعة',
+        addUser: 'إضافة مستخدم',
+        addUserHint: 'الانتقال إلى صفحة المستخدمين لإضافة مستخدم جديد',
+        scheduleEvent: 'جدولة حدث',
+        scheduleEventHint: 'الانتقال إلى صفحة الأحداث لإنشاء حدث جديد',
+        createReminder: 'إنشاء تذكير',
+        createReminderHint: 'الانتقال إلى صفحة التذكيرات لإعداد تذكير جديد',
+        refresh: 'تحديث الإحصائيات',
+        refreshHint: 'إعادة تحميل إحصائيات لوحة التحكم'
       },
       // Users
       users: {

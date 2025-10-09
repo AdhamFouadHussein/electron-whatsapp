@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-function Dashboard() {
+function Dashboard({ setCurrentView }) {
   const { t } = useTranslation();
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -86,13 +86,37 @@ function Dashboard() {
 
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title">Quick Actions</h3>
+          <h3 className="card-title">{t('dashboard.quickActions')}</h3>
         </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button className="btn btn-primary">Add User</button>
-          <button className="btn btn-primary">Schedule Event</button>
-          <button className="btn btn-primary">Create Reminder</button>
-          <button className="btn btn-secondary" onClick={loadStats}>Refresh Stats</button>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setCurrentView('users')}
+            title={t('dashboard.addUserHint')}
+          >
+            👤 {t('dashboard.addUser')}
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setCurrentView('events')}
+            title={t('dashboard.scheduleEventHint')}
+          >
+            📅 {t('dashboard.scheduleEvent')}
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setCurrentView('reminders')}
+            title={t('dashboard.createReminderHint')}
+          >
+            ⏰ {t('dashboard.createReminder')}
+          </button>
+          <button 
+            className="btn btn-secondary" 
+            onClick={loadStats}
+            title={t('dashboard.refreshHint')}
+          >
+            🔄 {t('dashboard.refresh')}
+          </button>
         </div>
       </div>
     </div>

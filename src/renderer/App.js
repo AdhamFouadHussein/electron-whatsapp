@@ -52,7 +52,7 @@ function AppContent() {
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard setCurrentView={setCurrentView} />;
       case 'users':
         return <Users />;
       case 'events':
@@ -66,7 +66,7 @@ function AppContent() {
       case 'settings':
         return <Settings />;
       default:
-        return <Dashboard />;
+        return <Dashboard setCurrentView={setCurrentView} />;
     }
   };
 
