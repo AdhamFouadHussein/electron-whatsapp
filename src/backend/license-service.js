@@ -104,26 +104,7 @@ class LicenseService {
 
     return { valid: true };
   }
-
-  /**
-   * Verify license signature (basic verification)
-   */
-  verifySignature(license) {
-    try {
-      // Create signature from license data
-      const data = `${license.licenseKey}:${license.hardwareId}:${license.email}:${license.expiresAt}`;
-      const expectedSignature = crypto
-        .createHmac('sha256', process.env.LICENSE_SECRET || 'your-secret-key')
-        .update(data)
-        .digest('hex');
-
-      return license.signature === expectedSignature;
-    } catch (error) {
-      console.error('Signature verification failed:', error);
-      return false;
-    }
-  }
-
+  
   /**
    * Activate license with server
    */
@@ -237,15 +218,6 @@ class LicenseService {
         };
       }
 
-      // Verify signature
-      if (!this.verifySignature(license)) {
-        return {
-          valid: false,
-          reason: 'License signature is invalid',
-          requiresActivation: true,
-          hardwareId
-        };
-      }
 
       // Verify with server (online check)
       const onlineCheck = await this.verifyLicenseOnline(license);
