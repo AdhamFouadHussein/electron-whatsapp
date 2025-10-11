@@ -182,6 +182,111 @@ ipcMain.handle('settings:getSystemTheme', async () => {
   return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
 });
 
+// Database settings IPC handlers
+ipcMain.handle('settings:getDatabaseConfig', async () => {
+  try {
+    // Always read from environment variables (current config)
+    const config = {
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || '3306',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'whatsapp_reminder_app'
+    };
+    return config;
+  } catch (error) {
+    console.error('Error getting database config:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('settings:setDatabaseConfig', async (event, config) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Read current .env.production file
+    const envPath = path.join(__dirname, '../../.env.production');
+    let envContent = '';
+    
+    try {
+      envContent = fs.readFileSync(envPath, 'utf8');
+    } catch (error) {
+      // If file doesn't exist, create basic structure
+      envContent = `# MySQL Database Configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=whatsapp_reminder_app
+
+# Application Settings
+NODE_ENV=production
+APP_PORT=3000
+
+# License Server Configuration
+LICENSE_SERVER_URL=http://your-license-server.com/api/license
+LICENSE_SECRET=your-secret-key-change-in-production
+
+# Security
+ENCRYPTION_KEY=your-32-character-encryption-key
+
+# WhatsApp Session Storage
+WA_SESSION_PATH=./whatsapp-session
+
+# Logging
+LOG_LEVEL=info
+`;
+    }
+
+    // Update database configuration in .env content
+    envContent = envContent
+      .replace(/^DB_HOST=.*$/m, `DB_HOST=${config.host}`)
+      .replace(/^DB_PORT=.*$/m, `DB_PORT=${config.port}`)
+      .replace(/^DB_USER=.*$/m, `DB_USER=${config.user}`)
+      .replace(/^DB_PASSWORD=.*$/m, `DB_PASSWORD=${config.password}`)
+      .replace(/^DB_NAME=.*$/m, `DB_NAME=${config.database}`);
+
+    // Write back to file
+    fs.writeFileSync(envPath, envContent);
+    
+    // Update process.env for immediate effect
+    process.env.DB_HOST = config.host;
+    process.env.DB_PORT = config.port;
+    process.env.DB_USER = config.user;
+    process.env.DB_PASSWORD = config.password;
+    process.env.DB_NAME = config.database;
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error setting database config:', error);
+    throw error;
+  }
+});
+
+ipcMain.handle('settings:testDatabaseConnection', async (event, config) => {
+  try {
+    const mysql = require('mysql2/promise');
+    const testPool = mysql.createPool({
+      host: config.host,
+      port: parseInt(config.port),
+      user: config.user,
+      password: config.password,
+      database: config.database,
+      connectionLimit: 1,
+      acquireTimeout: 5000,
+      timeout: 5000
+    });
+
+    const connection = await testPool.getConnection();
+    connection.release();
+    await testPool.end();
+    return { success: true, message: 'Connection successful' };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+});
+
 // Listen for system theme changes
 nativeTheme.on('updated', () => {
   const theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';

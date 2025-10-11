@@ -47,7 +47,10 @@ contextBridge.exposeInMainWorld('api', {
     getLanguage: () => ipcRenderer.invoke('settings:getLanguage'),
     setLanguage: (language) => ipcRenderer.invoke('settings:setLanguage', language),
     getSystemTheme: () => ipcRenderer.invoke('settings:getSystemTheme'),
-    onSystemThemeChange: (callback) => ipcRenderer.on('settings:systemThemeChanged', (_, theme) => callback(theme))
+    onSystemThemeChange: (callback) => ipcRenderer.on('settings:systemThemeChanged', (_, theme) => callback(theme)),
+    getDatabaseConfig: () => ipcRenderer.invoke('settings:getDatabaseConfig'),
+    setDatabaseConfig: (config) => ipcRenderer.invoke('settings:setDatabaseConfig', config),
+    testDatabaseConnection: (config) => ipcRenderer.invoke('settings:testDatabaseConnection', config)
   },
 
   // System
