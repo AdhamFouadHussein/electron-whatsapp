@@ -1,24 +1,49 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// Create connection pool for better performance with multiple devices
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0
-});
+let pool = null;
+
+// Create or recreate connection pool
+function createPool() {
+  if (pool) {
+    pool.end(); // Close existing pool
+  }
+  
+  pool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'whatsapp_reminder_app',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
+  });
+  
+  console.log('Database pool created/recreated with config:', {
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || 'root',
+    database: process.env.DB_NAME || 'whatsapp_reminder_app'
+  });
+  
+  return pool;
+}
+
+// Get the pool, creating it if it doesn't exist
+function getPool() {
+  if (!pool) {
+    createPool();
+  }
+  return pool;
+}
 
 // Test connection
 async function testConnection() {
   try {
-    const connection = await pool.getConnection();
+    const connection = await getPool().getConnection();
     console.log('✓ MySQL connected successfully');
     connection.release();
     return true;
@@ -31,7 +56,7 @@ async function testConnection() {
 // Initialize database schema
 async function initializeDatabase() {
   try {
-    await pool.query(`
+    await getPool().query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -47,7 +72,7 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    await pool.query(`
+    await getPool().query(`
       CREATE TABLE IF NOT EXISTS events (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
@@ -66,7 +91,7 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    await pool.query(`
+    await getPool().query(`
       CREATE TABLE IF NOT EXISTS reminders (
         id INT AUTO_INCREMENT PRIMARY KEY,
         event_id INT NOT NULL,
@@ -86,7 +111,7 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    await pool.query(`
+    await getPool().query(`
       CREATE TABLE IF NOT EXISTS message_templates (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -103,7 +128,7 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    await pool.query(`
+    await getPool().query(`
       CREATE TABLE IF NOT EXISTS files (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
@@ -122,7 +147,7 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    await pool.query(`
+    await getPool().query(`
       CREATE TABLE IF NOT EXISTS message_logs (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
@@ -144,7 +169,7 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    await pool.query(`
+    await getPool().query(`
       CREATE TABLE IF NOT EXISTS app_settings (
         id INT AUTO_INCREMENT PRIMARY KEY,
         setting_key VARCHAR(100) UNIQUE NOT NULL,
@@ -237,7 +262,7 @@ async function insertDefaultTemplates() {
   ];
 
   for (const template of templates) {
-    await pool.query(
+    await getPool().query(
       `INSERT IGNORE INTO message_templates (name, event_type, language, template_text, variables, is_default)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [template.name, template.event_type, template.language, template.template_text, template.variables, template.is_default]
@@ -247,6 +272,8 @@ async function insertDefaultTemplates() {
 
 module.exports = {
   pool,
+  getPool,
+  createPool,
   testConnection,
   initializeDatabase
 };

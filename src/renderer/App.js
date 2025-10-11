@@ -10,12 +10,14 @@ import MessageLogs from './components/MessageLogs';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import QRCodeDisplay from './components/QRCodeDisplay';
 import './styles/App.css';
 
 function AppContent() {
   const { t, i18n } = useTranslation();
   const [currentView, setCurrentView] = useState('dashboard');
   const [whatsappStatus, setWhatsappStatus] = useState('disconnected');
+  const [qrCode, setQrCode] = useState(null);
 
   useEffect(() => {
     // Load language preference
@@ -46,6 +48,15 @@ function AppContent() {
     // Listen for WhatsApp status changes
     window.api.whatsapp.onStatusChange((status) => {
       setWhatsappStatus(status);
+      // Clear QR code when connected
+      if (status === 'connected') {
+        setQrCode(null);
+      }
+    });
+
+    // Listen for QR code updates
+    window.api.whatsapp.onQRCode((qr) => {
+      setQrCode(qr);
     });
   }, [i18n]);
 
@@ -79,6 +90,14 @@ function AppContent() {
           {renderView()}
         </div>
       </div>
+      
+      {/* QR Code Modal */}
+      {qrCode && (
+        <QRCodeDisplay 
+          qrString={qrCode} 
+          onClose={() => setQrCode(null)} 
+        />
+      )}
     </div>
   );
 }

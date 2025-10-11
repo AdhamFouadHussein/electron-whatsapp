@@ -7,10 +7,37 @@ const licenseService = require('./license-service');
 const fs = require('fs');
 const path = require('path');
 
+// Load database configuration from user data directory
+async function loadDatabaseConfig() {
+  try {
+    const { app } = require('electron');
+    const userDataPath = app.getPath('userData');
+    const configPath = path.join(userDataPath, 'database-config.json');
+    
+    if (fs.existsSync(configPath)) {
+      const savedConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      
+      // Update environment variables with saved config
+      if (savedConfig.host) process.env.DB_HOST = savedConfig.host;
+      if (savedConfig.port) process.env.DB_PORT = savedConfig.port;
+      if (savedConfig.user) process.env.DB_USER = savedConfig.user;
+      if (savedConfig.password) process.env.DB_PASSWORD = savedConfig.password;
+      if (savedConfig.database) process.env.DB_NAME = savedConfig.database;
+      
+      console.log('Database configuration loaded from user data');
+    }
+  } catch (error) {
+    console.error('Error loading database config:', error);
+  }
+}
+
 // Initialize backend services
 async function initializeBackend(mainWindow) {
   try {
     console.log('Initializing backend services...');
+    
+    // Load database configuration from user data directory
+    await loadDatabaseConfig();
     
     // Test database connection
     await testConnection();
@@ -185,14 +212,45 @@ ipcMain.handle('settings:getSystemTheme', async () => {
 // Database settings IPC handlers
 ipcMain.handle('settings:getDatabaseConfig', async () => {
   try {
-    // Always read from environment variables (current config)
-    const config = {
+    const fs = require('fs');
+    const path = require('path');
+    const { app } = require('electron');
+    
+    // Try to read from user data directory first
+    const userDataPath = app.getPath('userData');
+    const configPath = path.join(userDataPath, 'database-config.json');
+    
+    let config = {
       host: process.env.DB_HOST || 'localhost',
       port: process.env.DB_PORT || '3306',
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
       database: process.env.DB_NAME || 'whatsapp_reminder_app'
     };
+    
+    // If user config exists, use it
+    if (fs.existsSync(configPath)) {
+      try {
+        const savedConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        config = {
+          host: savedConfig.host || config.host,
+          port: savedConfig.port || config.port,
+          user: savedConfig.user || config.user,
+          password: savedConfig.password || config.password,
+          database: savedConfig.database || config.database
+        };
+        
+        // Update environment variables with saved config
+        process.env.DB_HOST = config.host;
+        process.env.DB_PORT = config.port;
+        process.env.DB_USER = config.user;
+        process.env.DB_PASSWORD = config.password;
+        process.env.DB_NAME = config.database;
+      } catch (parseError) {
+        console.error('Error parsing saved database config:', parseError);
+      }
+    }
+    
     return config;
   } catch (error) {
     console.error('Error getting database config:', error);
@@ -204,51 +262,31 @@ ipcMain.handle('settings:setDatabaseConfig', async (event, config) => {
   try {
     const fs = require('fs');
     const path = require('path');
+    const { app } = require('electron');
+    const { createPool } = require('./database');
     
-    // Read current .env.production file
-    const envPath = path.join(__dirname, '../../.env.production');
-    let envContent = '';
+    // Get user data directory (writable location)
+    const userDataPath = app.getPath('userData');
+    const configPath = path.join(userDataPath, 'database-config.json');
     
-    try {
-      envContent = fs.readFileSync(envPath, 'utf8');
-    } catch (error) {
-      // If file doesn't exist, create basic structure
-      envContent = `# MySQL Database Configuration
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=whatsapp_reminder_app
-
-# Application Settings
-NODE_ENV=production
-APP_PORT=3000
-
-# License Server Configuration
-LICENSE_SERVER_URL=http://your-license-server.com/api/license
-LICENSE_SECRET=your-secret-key-change-in-production
-
-# Security
-ENCRYPTION_KEY=your-32-character-encryption-key
-
-# WhatsApp Session Storage
-WA_SESSION_PATH=./whatsapp-session
-
-# Logging
-LOG_LEVEL=info
-`;
+    // Save database configuration to user data directory
+    const configData = {
+      host: config.host,
+      port: config.port,
+      user: config.user,
+      password: config.password,
+      database: config.database,
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Ensure directory exists
+    const configDir = path.dirname(configPath);
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
     }
-
-    // Update database configuration in .env content
-    envContent = envContent
-      .replace(/^DB_HOST=.*$/m, `DB_HOST=${config.host}`)
-      .replace(/^DB_PORT=.*$/m, `DB_PORT=${config.port}`)
-      .replace(/^DB_USER=.*$/m, `DB_USER=${config.user}`)
-      .replace(/^DB_PASSWORD=.*$/m, `DB_PASSWORD=${config.password}`)
-      .replace(/^DB_NAME=.*$/m, `DB_NAME=${config.database}`);
-
-    // Write back to file
-    fs.writeFileSync(envPath, envContent);
+    
+    // Write configuration file
+    fs.writeFileSync(configPath, JSON.stringify(configData, null, 2));
     
     // Update process.env for immediate effect
     process.env.DB_HOST = config.host;
@@ -257,6 +295,10 @@ LOG_LEVEL=info
     process.env.DB_PASSWORD = config.password;
     process.env.DB_NAME = config.database;
     
+    // Recreate the database pool with new settings
+    createPool();
+    
+    console.log('Database configuration saved and pool recreated with new settings');
     return { success: true };
   } catch (error) {
     console.error('Error setting database config:', error);
@@ -329,4 +371,4 @@ ipcMain.handle('license:getHardwareId', async () => {
   return await licenseService.getHardwareId();
 });
 
-module.exports = { initializeBackend };
+module.exports = { initializeBackend, loadDatabaseConfig };

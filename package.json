@@ -1,5 +1,5 @@
 {
-  "name": "electron-whatsapp",
+  "name": "af-whatsapp-reminders",
   "version": "1.0.0",
   "description": "Modern Electron App with MySQL Storage and WhatsApp Reminders",
   "main": "main.js",
@@ -10,7 +10,7 @@
     "build": "webpack --mode production",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
-    "dist:win": "npm run build && electron-builder --win",
+    "dist:win": "npm run build && electron-builder --win --x64",
     "dist:linux": "npm run build && electron-builder --linux",
     "test": "jest",
     "test:watch": "jest --watch"
@@ -28,10 +28,12 @@
     "node-cron": "^3.0.3",
     "node-machine-id": "^1.1.12",
     "qrcode-terminal": "^0.12.0",
+    "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^14.0.0",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "react-qr-code": "^2.0.18"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",

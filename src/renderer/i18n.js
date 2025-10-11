@@ -181,6 +181,19 @@ const resources = {
         about: 'About',
         version: 'Version'
       },
+      
+      // WhatsApp
+      whatsapp: {
+        qrTitle: 'WhatsApp QR Code',
+        qrInstructions: {
+          title: 'How to connect:',
+          step1: 'Open WhatsApp on your phone',
+          step2: 'Tap Menu or Settings',
+          step3: 'Tap "Linked Devices"',
+          step4: 'Scan this QR code with your phone'
+        }
+      },
+      
       // Common
       common: {
         save: 'Save',
@@ -425,6 +438,19 @@ const resources = {
         about: 'حول',
         version: 'الإصدار'
       },
+      
+      // WhatsApp
+      whatsapp: {
+        qrTitle: 'رمز QR للواتساب',
+        qrInstructions: {
+          title: 'كيفية الاتصال:',
+          step1: 'افتح واتساب على هاتفك',
+          step2: 'اضغط على القائمة أو الإعدادات',
+          step3: 'اضغط على "الأجهزة المرتبطة"',
+          step4: 'امسح رمز QR هذا بهاتفك'
+        }
+      },
+      
       // Common
       common: {
         save: 'حفظ',

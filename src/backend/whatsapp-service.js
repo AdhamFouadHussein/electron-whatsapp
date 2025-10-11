@@ -1,5 +1,4 @@
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
-const QRCode = require('qrcode-terminal');
 const fs = require('fs');
 const path = require('path');
 const { Boom } = require('@hapi/boom');
@@ -42,7 +41,7 @@ class WhatsAppService {
       this.sock = makeWASocket({
         version,
         auth: state,
-        printQRInTerminal: true,
+        printQRInTerminal: false, // Disable terminal QR printing for production
         browser: ['WhatsApp Reminder App', 'Desktop', '1.0.0']
       });
 
@@ -51,8 +50,8 @@ class WhatsAppService {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-          console.log('QR Code received, scan with WhatsApp');
-          QRCode.generate(qr, { small: true });
+          console.log('QR Code received, sending to UI');
+          // Send QR code to UI for display
           if (this.qrCallback) {
             this.qrCallback(qr);
           }
