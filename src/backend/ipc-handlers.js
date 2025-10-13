@@ -153,6 +153,15 @@ ipcMain.handle('whatsapp:getStatus', async () => {
   return whatsappService.getStatus();
 });
 
+ipcMain.handle('whatsapp:disconnect', async () => {
+  try {
+    await whatsappService.disconnect();
+    return { success: true };
+  } catch (error) {
+    throw new Error(`Failed to disconnect WhatsApp: ${error.message}`);
+  }
+});
+
 ipcMain.handle('whatsapp:sendMessage', async (event, phone, message, language) => {
   try {
     return await whatsappService.sendMessage(phone, message);

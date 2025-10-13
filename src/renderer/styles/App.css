@@ -613,3 +613,303 @@ body {
   padding-right: 20px;
   padding-left: 0;
 }
+
+/* WhatsApp Manager Styles */
+.whatsapp-manager {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.whatsapp-header {
+  margin-bottom: 30px;
+}
+
+.whatsapp-header h2 {
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.whatsapp-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.whatsapp-status-card {
+  margin-bottom: 24px;
+}
+
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.status-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-icon {
+  font-size: 24px;
+}
+
+.status-icon.connected {
+  color: var(--success);
+}
+
+.status-icon.disconnected {
+  color: var(--error);
+}
+
+.status-icon.reconnecting {
+  color: var(--warning);
+  animation: spin 2s linear infinite;
+}
+
+.status-info h3 {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.status-text {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.status-text.connected {
+  color: var(--success);
+}
+
+.status-text.disconnected {
+  color: var(--error);
+}
+
+.status-text.reconnecting {
+  color: var(--warning);
+}
+
+.status-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.status-actions .btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* QR Card Styles */
+.qr-card {
+  margin-bottom: 24px;
+}
+
+.qr-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.qr-header h3 {
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.qr-header p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.qr-content {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.qr-code-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.qr-instructions {
+  flex: 1;
+}
+
+.qr-instructions h4 {
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.qr-instructions ol {
+  color: var(--text-secondary);
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+.qr-instructions li {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.instruction-icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* History Card Styles */
+.history-card h3 {
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+}
+
+.history-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.no-history {
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 20px;
+}
+
+.history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  border-left: 3px solid transparent;
+}
+
+.history-item.success {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-left-color: var(--success);
+}
+
+.history-item.error {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left-color: var(--error);
+}
+
+.history-item.warning {
+  background-color: rgba(255, 152, 0, 0.1);
+  border-left-color: var(--warning);
+}
+
+.history-item.info {
+  background-color: rgba(33, 150, 243, 0.1);
+  border-left-color: var(--accent);
+}
+
+.history-icon {
+  margin-top: 2px;
+  font-size: 16px;
+}
+
+.history-item.success .history-icon {
+  color: var(--success);
+}
+
+.history-item.error .history-icon {
+  color: var(--error);
+}
+
+.history-item.warning .history-icon {
+  color: var(--warning);
+}
+
+.history-item.info .history-icon {
+  color: var(--accent);
+}
+
+.history-content {
+  flex: 1;
+}
+
+.history-content p {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.history-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Responsive Design for WhatsApp Manager */
+@media (max-width: 768px) {
+  .qr-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .qr-instructions {
+    text-align: center;
+  }
+  
+  .status-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .status-actions {
+    width: 100%;
+  }
+  
+  .status-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* RTL Support for WhatsApp Manager */
+[dir="rtl"] .qr-instructions ol {
+  padding-right: 20px;
+  padding-left: 0;
+}
+
+[dir="rtl"] .status-info {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .history-item {
+  border-left: none;
+  border-right: 3px solid transparent;
+}
+
+[dir="rtl"] .history-item.success {
+  border-right-color: var(--success);
+}
+
+[dir="rtl"] .history-item.error {
+  border-right-color: var(--error);
+}
+
+[dir="rtl"] .history-item.warning {
+  border-right-color: var(--warning);
+}
+
+[dir="rtl"] .history-item.info {
+  border-right-color: var(--accent);
+}

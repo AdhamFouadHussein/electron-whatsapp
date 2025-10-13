@@ -7,6 +7,7 @@ import Events from './components/Events';
 import Reminders from './components/Reminders';
 import Templates from './components/Templates';
 import MessageLogs from './components/MessageLogs';
+import WhatsAppManager from './components/WhatsAppManager';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -74,6 +75,8 @@ function AppContent() {
         return <Templates />;
       case 'logs':
         return <MessageLogs />;
+      case 'whatsapp':
+        return <WhatsAppManager />;
       case 'settings':
         return <Settings />;
       default:

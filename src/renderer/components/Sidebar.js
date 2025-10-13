@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiHome, FiUsers, FiCalendar, FiBell, FiFileText, FiList, FiSettings } from 'react-icons/fi';
+import { FiHome, FiUsers, FiCalendar, FiBell, FiFileText, FiList, FiMessageSquare, FiSettings } from 'react-icons/fi';
 
 function Sidebar({ currentView, setCurrentView }) {
   const { t } = useTranslation();
-
+  
   const navItems = [
     { id: 'dashboard', label: t('nav.dashboard'), icon: FiHome },
     { id: 'users', label: t('nav.users'), icon: FiUsers },
@@ -12,10 +12,9 @@ function Sidebar({ currentView, setCurrentView }) {
     { id: 'reminders', label: t('nav.reminders'), icon: FiBell },
     { id: 'templates', label: t('nav.templates'), icon: FiFileText },
     { id: 'logs', label: t('nav.logs'), icon: FiList },
+    { id: 'whatsapp', label: t('nav.whatsapp'), icon: FiMessageSquare },
     { id: 'settings', label: t('nav.settings'), icon: FiSettings }
-  ];
-
-  return (
+  ];  return (
     <div className="sidebar">
       <div className="sidebar-header">
         <h1>WhatsApp Reminders</h1>

@@ -34,6 +34,7 @@ contextBridge.exposeInMainWorld('api', {
   // WhatsApp operations
   whatsapp: {
     getStatus: () => ipcRenderer.invoke('whatsapp:getStatus'),
+    disconnect: () => ipcRenderer.invoke('whatsapp:disconnect'),
     sendMessage: (phone, message, language) => ipcRenderer.invoke('whatsapp:sendMessage', phone, message, language),
     sendMessageWithFile: (phone, message, fileId, language) => ipcRenderer.invoke('whatsapp:sendMessageWithFile', phone, message, fileId, language),
     onQRCode: (callback) => ipcRenderer.on('whatsapp:qr', (_, qr) => callback(qr)),

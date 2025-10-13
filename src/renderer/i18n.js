@@ -13,6 +13,7 @@ const resources = {
         reminders: 'Reminders',
         templates: 'Templates',
         logs: 'Message Logs',
+        whatsapp: 'WhatsApp',
         settings: 'Settings'
       },
       // Dashboard
@@ -184,7 +185,25 @@ const resources = {
       
       // WhatsApp
       whatsapp: {
-        qrTitle: 'WhatsApp QR Code',
+        title: 'WhatsApp Management',
+        subtitle: 'Connect and manage your WhatsApp integration',
+        currentStatus: 'Current Status',
+        connect: 'Connect WhatsApp',
+        disconnect: 'Disconnect',
+        connecting: 'Connecting...',
+        refresh: 'Refresh Status',
+        connectionHistory: 'Connection History',
+        noHistory: 'No connection history yet',
+        qrTitle: 'Scan QR Code to Connect',
+        qrSubtitle: 'Use your phone to scan this QR code',
+        status: {
+          connected: 'Connected',
+          disconnected: 'Disconnected',
+          reconnecting: 'Reconnecting...',
+          qrReady: 'QR Code Ready',
+          loggedOut: 'Logged Out',
+          error: 'Connection Error'
+        },
         qrInstructions: {
           title: 'How to connect:',
           step1: 'Open WhatsApp on your phone',
@@ -269,7 +288,8 @@ const resources = {
         events: 'الأحداث',
         reminders: 'التذكيرات',
         templates: 'القوالب',
-        logs: 'سجل الرسائل',
+        logs: 'سجلات الرسائل',
+        whatsapp: 'واتساب',
         settings: 'الإعدادات'
       },
       // Dashboard
@@ -441,7 +461,25 @@ const resources = {
       
       // WhatsApp
       whatsapp: {
-        qrTitle: 'رمز QR للواتساب',
+        title: 'إدارة واتساب',
+        subtitle: 'اتصل وأدر تكامل واتساب الخاص بك',
+        currentStatus: 'الحالة الحالية',
+        connect: 'اتصال واتساب',
+        disconnect: 'قطع الاتصال',
+        connecting: 'جارٍ الاتصال...',
+        refresh: 'تحديث الحالة',
+        connectionHistory: 'تاريخ الاتصال',
+        noHistory: 'لا يوجد تاريخ اتصال بعد',
+        qrTitle: 'امسح رمز QR للاتصال',
+        qrSubtitle: 'استخدم هاتفك لمسح رمز QR هذا',
+        status: {
+          connected: 'متصل',
+          disconnected: 'غير متصل',
+          reconnecting: 'إعادة الاتصال...',
+          qrReady: 'رمز QR جاهز',
+          loggedOut: 'تم تسجيل الخروج',
+          error: 'خطأ في الاتصال'
+        },
         qrInstructions: {
           title: 'كيفية الاتصال:',
           step1: 'افتح واتساب على هاتفك',
