@@ -66,19 +66,24 @@ function Reminders() {
   };
 
   const handleEventChange = async (eventId) => {
-    setFormData({ ...formData, event_id: eventId });
-    
     if (eventId) {
       const selectedEvent = events.find(e => e.id === parseInt(eventId));
       if (selectedEvent) {
         await loadUserFiles(selectedEvent.user_id);
         
-        // Set default reminder time to 1 hour before event
-        const eventDate = new Date(selectedEvent.event_date);
-        eventDate.setHours(eventDate.getHours() - 1);
-        const defaultReminderTime = eventDate.toISOString().slice(0, 16);
-        setFormData(prev => ({ ...prev, reminder_time: defaultReminderTime }));
+        // Set default reminder time to 1 hour before event (only if creating new reminder)
+        if (!editingReminder) {
+          const eventDate = new Date(selectedEvent.event_date);
+          eventDate.setHours(eventDate.getHours() - 1);
+          const defaultReminderTime = eventDate.toISOString().slice(0, 16);
+          setFormData(prev => ({ ...prev, event_id: eventId, reminder_time: defaultReminderTime, file_id: '' }));
+        } else {
+          setFormData(prev => ({ ...prev, event_id: eventId, file_id: '' }));
+        }
       }
+    } else {
+      setFormData(prev => ({ ...prev, event_id: '', file_id: '' }));
+      setFiles([]);
     }
   };
 
@@ -117,7 +122,7 @@ function Reminders() {
     }
   };
 
-  const handleEdit = (reminder) => {
+  const handleEdit = async (reminder) => {
     setEditingReminder(reminder);
     const reminderTime = new Date(reminder.reminder_time).toISOString().slice(0, 16);
     setFormData({
@@ -128,6 +133,13 @@ function Reminders() {
       file_id: reminder.file_id || '',
       status: reminder.status
     });
+    
+    // Load files for this event's user
+    const selectedEvent = events.find(e => e.id === reminder.event_id);
+    if (selectedEvent) {
+      await loadUserFiles(selectedEvent.user_id);
+    }
+    
     setShowModal(true);
   };
 

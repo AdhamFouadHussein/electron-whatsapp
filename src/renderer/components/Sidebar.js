@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiHome, FiUsers, FiCalendar, FiBell, FiFileText, FiList, FiMessageSquare, FiSettings } from 'react-icons/fi';
+import { FiHome, FiUsers, FiCalendar, FiBell, FiFileText, FiFile, FiList, FiMessageSquare, FiSettings } from 'react-icons/fi';
 
 function Sidebar({ currentView, setCurrentView }) {
   const { t } = useTranslation();
@@ -11,6 +11,7 @@ function Sidebar({ currentView, setCurrentView }) {
     { id: 'events', label: t('nav.events'), icon: FiCalendar },
     { id: 'reminders', label: t('nav.reminders'), icon: FiBell },
     { id: 'templates', label: t('nav.templates'), icon: FiFileText },
+    { id: 'files', label: t('nav.files'), icon: FiFile },
     { id: 'logs', label: t('nav.logs'), icon: FiList },
     { id: 'whatsapp', label: t('nav.whatsapp'), icon: FiMessageSquare },
     { id: 'settings', label: t('nav.settings'), icon: FiSettings }

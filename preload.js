@@ -28,7 +28,9 @@ contextBridge.exposeInMainWorld('api', {
     
     uploadFile: (file) => ipcRenderer.invoke('db:uploadFile', file),
     getFile: (id) => ipcRenderer.invoke('db:getFile', id),
-    getUserFiles: (userId) => ipcRenderer.invoke('db:getUserFiles', userId)
+    getUserFiles: (userId) => ipcRenderer.invoke('db:getUserFiles', userId),
+    getAllFiles: () => ipcRenderer.invoke('db:getAllFiles'),
+    deleteFile: (id) => ipcRenderer.invoke('db:deleteFile', id)
   },
 
   // WhatsApp operations

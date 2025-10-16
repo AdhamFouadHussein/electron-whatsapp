@@ -165,9 +165,14 @@ async function saveMessageTemplate(template) {
 
 // File operations
 async function uploadFile(fileData) {
+  // Convert array back to Buffer if needed
+  const fileBuffer = Array.isArray(fileData.file_data) 
+    ? Buffer.from(fileData.file_data) 
+    : fileData.file_data;
+    
   const [result] = await getPool().query(
     'INSERT INTO files (user_id, filename, original_name, file_type, file_size, storage_type, file_data, mime_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [fileData.user_id, fileData.filename, fileData.original_name, fileData.file_type, fileData.file_size, 'mysql', fileData.file_data, fileData.mime_type]
+    [fileData.user_id, fileData.filename, fileData.original_name, fileData.file_type, fileData.file_size, 'mysql', fileBuffer, fileData.mime_type]
   );
   return { id: result.insertId, filename: fileData.filename, original_name: fileData.original_name };
 }
@@ -183,6 +188,22 @@ async function getUserFiles(userId) {
     [userId]
   );
   return rows;
+}
+
+async function getAllFiles() {
+  const [rows] = await getPool().query(
+    `SELECT f.id, f.filename, f.original_name, f.file_type, f.file_size, f.mime_type, f.created_at, f.user_id,
+            u.name as user_name, u.phone as user_phone
+     FROM files f
+     JOIN users u ON f.user_id = u.id
+     ORDER BY f.created_at DESC`
+  );
+  return rows;
+}
+
+async function deleteFile(id) {
+  await getPool().query('DELETE FROM files WHERE id = ?', [id]);
+  return { id };
 }
 
 // Message log operations
@@ -273,6 +294,8 @@ module.exports = {
   uploadFile,
   getFile,
   getUserFiles,
+  getAllFiles,
+  deleteFile,
   
   // Message logs
   createMessageLog,

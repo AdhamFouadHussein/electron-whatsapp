@@ -12,6 +12,7 @@ const resources = {
         events: 'Events',
         reminders: 'Reminders',
         templates: 'Templates',
+        files: 'Files',
         logs: 'Message Logs',
         whatsapp: 'WhatsApp',
         settings: 'Settings'
@@ -276,6 +277,38 @@ const resources = {
           sent: 'Sent',
           failed: 'Failed'
         }
+      },
+      // Files
+      files: {
+        title: 'File Management',
+        uploadFile: 'Upload File',
+        fileName: 'File Name',
+        fileSize: 'File Size',
+        fileType: 'Type',
+        user: 'User',
+        uploadDate: 'Upload Date',
+        totalFiles: 'Total Files',
+        totalSize: 'Total Size',
+        filterByUser: 'Filter by User',
+        allUsers: 'All Users',
+        search: 'Search',
+        searchPlaceholder: 'Search files or users...',
+        noFilesFound: 'No files found',
+        uploadFirstFile: 'Upload your first file to get started!',
+        selectUser: 'Select User',
+        selectFile: 'Select File',
+        userHelp: 'Choose the user this file belongs to',
+        maxFileSize: 'Maximum file size:',
+        fileTooLarge: 'File is too large. Maximum size is 16MB',
+        uploadSuccess: 'File uploaded successfully!',
+        uploadError: 'Failed to upload file',
+        fileReadError: 'Failed to read file',
+        uploading: 'Uploading...',
+        upload: 'Upload',
+        type: 'Type',
+        confirmDelete: 'Are you sure you want to delete this file?',
+        deleteError: 'Failed to delete file',
+        deleteNotImplemented: 'Delete functionality will be implemented soon'
       }
     }
   },
@@ -288,6 +321,7 @@ const resources = {
         events: 'الأحداث',
         reminders: 'التذكيرات',
         templates: 'القوالب',
+        files: 'الملفات',
         logs: 'سجلات الرسائل',
         whatsapp: 'واتساب',
         settings: 'الإعدادات'
@@ -552,6 +586,38 @@ const resources = {
           sent: 'مرسل',
           failed: 'فشل'
         }
+      },
+      // Files
+      files: {
+        title: 'إدارة الملفات',
+        uploadFile: 'رفع ملف',
+        fileName: 'اسم الملف',
+        fileSize: 'حجم الملف',
+        fileType: 'النوع',
+        user: 'المستخدم',
+        uploadDate: 'تاريخ الرفع',
+        totalFiles: 'إجمالي الملفات',
+        totalSize: 'الحجم الإجمالي',
+        filterByUser: 'تصفية حسب المستخدم',
+        allUsers: 'جميع المستخدمين',
+        search: 'بحث',
+        searchPlaceholder: 'البحث عن الملفات أو المستخدمين...',
+        noFilesFound: 'لم يتم العثور على ملفات',
+        uploadFirstFile: 'قم برفع أول ملف للبدء!',
+        selectUser: 'اختر المستخدم',
+        selectFile: 'اختر ملف',
+        userHelp: 'اختر المستخدم الذي ينتمي إليه هذا الملف',
+        maxFileSize: 'الحد الأقصى لحجم الملف:',
+        fileTooLarge: 'الملف كبير جداً. الحد الأقصى هو 16 ميجابايت',
+        uploadSuccess: 'تم رفع الملف بنجاح!',
+        uploadError: 'فشل رفع الملف',
+        fileReadError: 'فشل قراءة الملف',
+        uploading: 'جاري الرفع...',
+        upload: 'رفع',
+        type: 'النوع',
+        confirmDelete: 'هل أنت متأكد من حذف هذا الملف؟',
+        deleteError: 'فشل حذف الملف',
+        deleteNotImplemented: 'سيتم تنفيذ وظيفة الحذف قريباً'
       }
     }
   }

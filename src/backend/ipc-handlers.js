@@ -148,6 +148,14 @@ ipcMain.handle('db:getUserFiles', async (event, userId) => {
   return await dbOps.getUserFiles(userId);
 });
 
+ipcMain.handle('db:getAllFiles', async () => {
+  return await dbOps.getAllFiles();
+});
+
+ipcMain.handle('db:deleteFile', async (event, id) => {
+  return await dbOps.deleteFile(id);
+});
+
 // WhatsApp IPC handlers
 ipcMain.handle('whatsapp:getStatus', async () => {
   return whatsappService.getStatus();
