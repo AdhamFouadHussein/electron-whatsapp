@@ -58,7 +58,12 @@ async function initializeBackend(mainWindow) {
       }
     });
     
-    await whatsappService.connect();
+    // Try to auto-connect WhatsApp (will use saved session if exists)
+    try {
+      await whatsappService.connect();
+    } catch (error) {
+      console.log('WhatsApp auto-connect failed (this is normal for first time setup):', error.message);
+    }
     
     // Start reminder scheduler
     reminderScheduler.start();
@@ -157,6 +162,15 @@ ipcMain.handle('db:deleteFile', async (event, id) => {
 });
 
 // WhatsApp IPC handlers
+ipcMain.handle('whatsapp:connect', async () => {
+  try {
+    await whatsappService.connect();
+    return { success: true };
+  } catch (error) {
+    throw new Error(`Failed to connect WhatsApp: ${error.message}`);
+  }
+});
+
 ipcMain.handle('whatsapp:getStatus', async () => {
   return whatsappService.getStatus();
 });

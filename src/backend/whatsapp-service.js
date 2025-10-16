@@ -2,13 +2,16 @@ const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLat
 const fs = require('fs');
 const path = require('path');
 const { Boom } = require('@hapi/boom');
+const { app } = require('electron');
 
 class WhatsAppService {
   constructor() {
     this.sock = null;
     this.qrCallback = null;
     this.statusCallback = null;
-    this.sessionPath = process.env.WA_SESSION_PATH || './whatsapp-session';
+    // Use absolute path in user data directory
+    const userDataPath = app ? app.getPath('userData') : process.cwd();
+    this.sessionPath = path.join(userDataPath, 'whatsapp-session');
     this.status = 'disconnected';
   }
 

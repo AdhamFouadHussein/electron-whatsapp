@@ -62,8 +62,8 @@ function WhatsAppManager() {
     try {
       setIsConnecting(true);
       addToHistory('Initiating WhatsApp connection...', 'info');
-      // The connection process will be handled by the backend
-      // Status updates will come through the onStatusChange listener
+      await window.api.whatsapp.connect();
+      addToHistory('Connection initiated - waiting for QR code...', 'info');
     } catch (error) {
       console.error('Failed to connect WhatsApp:', error);
       addToHistory(`Connection failed: ${error.message}`, 'error');
