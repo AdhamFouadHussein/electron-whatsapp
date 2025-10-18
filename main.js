@@ -33,6 +33,17 @@ autoUpdater.logger.transports.file.level = 'info';
 autoUpdater.autoDownload = true; // Automatically download updates
 autoUpdater.autoInstallOnAppQuit = true; // Install on quit
 
+// For private repos, set the GitHub token
+if (process.env.GH_TOKEN) {
+  autoUpdater.setFeedURL({
+    provider: 'github',
+    owner: 'AdhamFouadHussein',
+    repo: 'electron-whatsapp',
+    private: true,
+    token: process.env.GH_TOKEN
+  });
+}
+
 // Auto-updater events
 autoUpdater.on('checking-for-update', () => {
   console.log('Checking for updates...');

@@ -61,7 +61,7 @@
         "provider": "github",
         "owner": "AdhamFouadHussein",
         "repo": "electron-whatsapp",
-        "private": true
+        "private": false
       }
     ],
     "appId": "com.adhamfouad.whatsapp-manager",
