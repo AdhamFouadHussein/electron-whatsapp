@@ -190,14 +190,19 @@ app.whenReady().then(async () => {
 
   // Check for updates after app is ready (only in production)
   if (app.isPackaged) {
-    // Check for updates on startup
+    // Only check for updates if there are releases available
+    // This prevents 404 errors when no releases exist yet
     setTimeout(() => {
-      autoUpdater.checkForUpdates();
+      autoUpdater.checkForUpdates().catch(err => {
+        console.log('No updates available yet:', err.message);
+      });
     }, 3000); // Wait 3 seconds after launch
     
     // Check for updates every hour
     setInterval(() => {
-      autoUpdater.checkForUpdates();
+      autoUpdater.checkForUpdates().catch(err => {
+        console.log('Update check failed:', err.message);
+      });
     }, 60 * 60 * 1000); // 60 minutes
   }
 
