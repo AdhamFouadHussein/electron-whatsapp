@@ -140,6 +140,10 @@ ipcMain.handle('db:getMessageLogs', async (event, userId) => {
   return await dbOps.getMessageLogs(userId);
 });
 
+ipcMain.handle('db:getUpcomingBirthdays', async (event, daysAhead) => {
+  return await dbOps.getUpcomingBirthdays(daysAhead || 30);
+});
+
 ipcMain.handle('db:uploadFile', async (event, fileData) => {
   // fileData should contain: user_id, filename, original_name, file_type, file_size, file_data (as Buffer), mime_type
   return await dbOps.uploadFile(fileData);
@@ -212,6 +216,69 @@ ipcMain.handle('whatsapp:sendMessageWithFile', async (event, phone, message, fil
     }
   } catch (error) {
     throw new Error(`Failed to send message with file: ${error.message}`);
+  }
+});
+
+ipcMain.handle('whatsapp:sendBirthdayWish', async (event, userId) => {
+  try {
+    // Get user data
+    const user = await dbOps.getUser(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Get birthday template for user's preferred language
+    const templates = await dbOps.getMessageTemplates(user.preferred_language);
+    const birthdayTemplate = templates.find(t => t.event_type === 'birthday' && t.is_default);
+
+    let message;
+    if (birthdayTemplate) {
+      // Interpolate variables in template
+      message = birthdayTemplate.template_text.replace(/\{\{name\}\}/g, user.name);
+    } else {
+      // Fallback message
+      message = user.preferred_language === 'ar' 
+        ? `عيد ميلاد سعيد ${user.name}! 🎉🎂 أتمنى لك يوماً رائعاً مليئاً بالفرح والسعادة!`
+        : `Happy Birthday ${user.name}! 🎉🎂 Wishing you a wonderful day filled with joy and happiness!`;
+    }
+
+    // Send message via WhatsApp
+    await whatsappService.sendMessage(user.phone, message);
+
+    // Log the message
+    await dbOps.createMessageLog({
+      user_id: user.id,
+      reminder_id: null,
+      message_type: 'birthday',
+      message_text: message,
+      language: user.preferred_language,
+      file_id: null,
+      phone: user.phone,
+      status: 'sent'
+    });
+
+    return { success: true, message };
+  } catch (error) {
+    // Log failed attempt
+    try {
+      const user = await dbOps.getUser(userId);
+      if (user) {
+        await dbOps.createMessageLog({
+          user_id: user.id,
+          reminder_id: null,
+          message_type: 'birthday',
+          message_text: 'Failed to send',
+          language: user.preferred_language,
+          file_id: null,
+          phone: user.phone,
+          status: 'failed',
+          error_message: error.message
+        });
+      }
+    } catch (logError) {
+      console.error('Error logging failed birthday message:', logError);
+    }
+    throw new Error(`Failed to send birthday wish: ${error.message}`);
   }
 });
 

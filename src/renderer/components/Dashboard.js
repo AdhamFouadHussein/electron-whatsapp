@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FiUsers, FiCalendar, FiBell, FiMessageSquare, FiRefreshCw, FiUserPlus } from 'react-icons/fi';
+import { FiUsers, FiCalendar, FiBell, FiMessageSquare, FiRefreshCw, FiUserPlus, FiGift } from 'react-icons/fi';
 
 function Dashboard({ setCurrentView }) {
   const { t } = useTranslation();
@@ -8,9 +8,11 @@ function Dashboard({ setCurrentView }) {
     totalUsers: 0,
     upcomingEvents: 0,
     pendingReminders: 0,
-    messagesSent: 0
+    messagesSent: 0,
+    upcomingBirthdays: 0
   });
   const [loading, setLoading] = useState(true);
+  const [birthdays, setBirthdays] = useState([]);
 
   useEffect(() => {
     loadStats();
@@ -38,11 +40,16 @@ function Dashboard({ setCurrentView }) {
         new Date(log.sent_at).toDateString() === today && log.status === 'sent'
       );
 
+      // Load upcoming birthdays (next 7 days)
+      const upcomingBirthdays = await window.api.db.getUpcomingBirthdays(7);
+      setBirthdays(upcomingBirthdays.slice(0, 3)); // Show only top 3
+
       setStats({
         totalUsers: users.length,
         upcomingEvents: upcomingEvents.length,
         pendingReminders: reminders.length,
-        messagesSent: todayLogs.length
+        messagesSent: todayLogs.length,
+        upcomingBirthdays: upcomingBirthdays.length
       });
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -87,7 +94,64 @@ function Dashboard({ setCurrentView }) {
           <div className="stat-label">{t('dashboard.messagesSent')}</div>
           <div className="stat-value">{stats.messagesSent}</div>
         </div>
+
+        <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => setCurrentView('birthdays')}>
+          <FiGift className="stat-icon" style={{ color: '#ff6b6b' }} />
+          <div className="stat-label">Upcoming Birthdays (7 days)</div>
+          <div className="stat-value">{stats.upcomingBirthdays}</div>
+        </div>
       </div>
+
+      {birthdays.length > 0 && (
+        <div className="card" style={{ marginTop: '20px' }}>
+          <div className="card-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FiGift style={{ fontSize: '20px', color: '#ff6b6b' }} />
+              <h3 className="card-title">Upcoming Birthdays</h3>
+            </div>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setCurrentView('birthdays')}
+            >
+              View All
+            </button>
+          </div>
+          <div style={{ padding: '10px' }}>
+            {birthdays.map((user) => (
+              <div 
+                key={user.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px',
+                  marginBottom: '8px',
+                  backgroundColor: user.days_until === 0 ? '#fff9e6' : '#f8f9fa',
+                  border: user.days_until === 0 ? '2px solid #ffd700' : '1px solid #dee2e6',
+                  borderRadius: '6px'
+                }}
+              >
+                <div>
+                  <strong>{user.name}</strong>
+                  <div style={{ fontSize: '14px', color: '#6c757d' }}>
+                    📅 {new Date(user.date_of_birth).toLocaleDateString()} • 📞 {user.phone}
+                  </div>
+                </div>
+                <div style={{
+                  padding: '6px 12px',
+                  backgroundColor: user.days_until === 0 ? '#ff6b6b' : '#17a2b8',
+                  color: 'white',
+                  borderRadius: '15px',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}>
+                  {user.days_until === 0 ? '🎂 Today!' : user.days_until === 1 ? 'Tomorrow' : `in ${user.days_until} days`}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <div className="card-header">

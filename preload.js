@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('api', {
     saveMessageTemplate: (template) => ipcRenderer.invoke('db:saveMessageTemplate', template),
     
     getMessageLogs: (userId) => ipcRenderer.invoke('db:getMessageLogs', userId),
+    getUpcomingBirthdays: (daysAhead) => ipcRenderer.invoke('db:getUpcomingBirthdays', daysAhead),
     
     uploadFile: (file) => ipcRenderer.invoke('db:uploadFile', file),
     getFile: (id) => ipcRenderer.invoke('db:getFile', id),
@@ -40,6 +41,7 @@ contextBridge.exposeInMainWorld('api', {
     disconnect: () => ipcRenderer.invoke('whatsapp:disconnect'),
     sendMessage: (phone, message, language) => ipcRenderer.invoke('whatsapp:sendMessage', phone, message, language),
     sendMessageWithFile: (phone, message, fileId, language) => ipcRenderer.invoke('whatsapp:sendMessageWithFile', phone, message, fileId, language),
+    sendBirthdayWish: (userId) => ipcRenderer.invoke('whatsapp:sendBirthdayWish', userId),
     onQRCode: (callback) => ipcRenderer.on('whatsapp:qr', (_, qr) => callback(qr)),
     onStatusChange: (callback) => ipcRenderer.on('whatsapp:status', (_, status) => callback(status))
   },

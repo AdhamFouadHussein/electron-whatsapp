@@ -11,6 +11,7 @@ const resources = {
         users: 'Users',
         events: 'Events',
         reminders: 'Reminders',
+        birthdays: 'Birthdays',
         templates: 'Templates',
         files: 'Files',
         logs: 'Message Logs',
@@ -129,6 +130,30 @@ const resources = {
           cancelled: 'Cancelled'
         }
       },
+      // Birthdays
+      birthdays: {
+        title: 'Birthday Management',
+        showNext: 'Show next',
+        days: 'days',
+        today: 'Today',
+        tomorrow: 'Tomorrow',
+        inDays: 'in {{days}} days',
+        sendWish: 'Send Wish',
+        sending: 'Sending...',
+        noBirthdays: 'No upcoming birthdays in the selected period',
+        whatsappNotConnected: 'WhatsApp is not connected. Please connect WhatsApp first.',
+        whatsappWarning: 'WhatsApp is not connected. Connect it to send birthday wishes.',
+        confirmSend: 'Send birthday wish to {{name}}?',
+        sentSuccess: 'Birthday wish sent to {{name}} successfully!',
+        sentError: 'Failed to send birthday wish to {{name}}: {{error}}',
+        howItWorks: 'How It Works',
+        step1: 'Add users with their birthdays and preferred language in the Users section',
+        step2: 'The system automatically checks for birthdays every day at 9:00 AM',
+        step3: 'Birthday messages are sent automatically in the user\'s preferred language',
+        step4: 'You can also manually send birthday wishes using the "Send Wish" button',
+        tip: 'Pro Tip:',
+        tipText: 'Customize birthday message templates in the Templates section for different languages!'
+      },
       // Templates
       templates: {
         title: 'Message Templates',
@@ -238,7 +263,8 @@ const resources = {
         tomorrow: 'Tomorrow',
         soon: 'Soon!',
         days: 'days',
-        hours: 'hours'
+        hours: 'hours',
+        refresh: 'Refresh'
       },
       // Message Logs
       messageLogs: {
@@ -320,6 +346,7 @@ const resources = {
         users: 'المستخدمون',
         events: 'الأحداث',
         reminders: 'التذكيرات',
+        birthdays: 'أعياد الميلاد',
         templates: 'القوالب',
         files: 'الملفات',
         logs: 'سجلات الرسائل',
@@ -438,6 +465,30 @@ const resources = {
           cancelled: 'ملغى'
         }
       },
+      // Birthdays
+      birthdays: {
+        title: 'إدارة أعياد الميلاد',
+        showNext: 'إظهار التالي',
+        days: 'أيام',
+        today: 'اليوم',
+        tomorrow: 'غداً',
+        inDays: 'خلال {{days}} أيام',
+        sendWish: 'إرسال تهنئة',
+        sending: 'جاري الإرسال...',
+        noBirthdays: 'لا توجد أعياد ميلاد قادمة في الفترة المحددة',
+        whatsappNotConnected: 'واتساب غير متصل. يرجى توصيل واتساب أولاً.',
+        whatsappWarning: 'واتساب غير متصل. قم بتوصيله لإرسال تهاني أعياد الميلاد.',
+        confirmSend: 'إرسال تهنئة عيد ميلاد إلى {{name}}؟',
+        sentSuccess: 'تم إرسال تهنئة عيد الميلاد إلى {{name}} بنجاح!',
+        sentError: 'فشل إرسال تهنئة عيد الميلاد إلى {{name}}: {{error}}',
+        howItWorks: 'كيف يعمل',
+        step1: 'أضف المستخدمين مع أعياد ميلادهم ولغتهم المفضلة في قسم المستخدمين',
+        step2: 'يتحقق النظام تلقائياً من أعياد الميلاد كل يوم في الساعة 9:00 صباحاً',
+        step3: 'يتم إرسال رسائل عيد الميلاد تلقائياً بلغة المستخدم المفضلة',
+        step4: 'يمكنك أيضاً إرسال تهاني عيد الميلاد يدوياً باستخدام زر "إرسال تهنئة"',
+        tip: 'نصيحة:',
+        tipText: 'خصص قوالب رسائل عيد الميلاد في قسم القوالب لمختلف اللغات!'
+      },
       // Templates
       templates: {
         title: 'قوالب الرسائل',
@@ -547,7 +598,8 @@ const resources = {
         tomorrow: 'غداً',
         soon: 'قريباً!',
         days: 'أيام',
-        hours: 'ساعات'
+        hours: 'ساعات',
+        refresh: 'تحديث'
       },
       // Message Logs
       messageLogs: {

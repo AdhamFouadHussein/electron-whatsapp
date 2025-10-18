@@ -8,6 +8,7 @@ import Reminders from './components/Reminders';
 import Templates from './components/Templates';
 import MessageLogs from './components/MessageLogs';
 import Files from './components/Files';
+import Birthdays from './components/Birthdays';
 import WhatsAppManager from './components/WhatsAppManager';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
@@ -72,6 +73,8 @@ function AppContent() {
         return <Events />;
       case 'reminders':
         return <Reminders />;
+      case 'birthdays':
+        return <Birthdays />;
       case 'templates':
         return <Templates />;
       case 'files':
