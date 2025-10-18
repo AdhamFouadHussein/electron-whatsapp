@@ -1,7 +1,7 @@
 {
   "name": "af-whatsapp-reminders",
-  "version": "1.0.1",
-  "description": "Modern Electron App with MySQL Storage and WhatsApp Reminders",
+  "version": "1.0.2",
+  "description": "Professional Multi-Device WhatsApp Automation Platform | Event Management & Intelligent Reminder System with Multi-Language Support, Dark Mode UI, and Enterprise-Grade MySQL Synchronization",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -15,7 +15,7 @@
     "test": "jest",
     "test:watch": "jest --watch"
   },
-  "author": "Adham Fouad",
+  "author": "Adham Fouad <adham@adhamfouad.com>",
   "license": "ISC",
   "dependencies": {
     "@hapi/boom": "^10.0.1",
