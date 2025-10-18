@@ -14,6 +14,7 @@ import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import QRCodeDisplay from './components/QRCodeDisplay';
+import UpdateNotification from './components/UpdateNotification';
 import './styles/App.css';
 
 function AppContent() {
@@ -107,6 +108,9 @@ function AppContent() {
           onClose={() => setQrCode(null)} 
         />
       )}
+      
+      {/* Update Notification */}
+      <UpdateNotification />
     </div>
   );
 }

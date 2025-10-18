@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 
@@ -25,6 +26,62 @@ const licenseService = require('./src/backend/license-service');
 
 let mainWindow;
 let licenseWindow;
+
+// Configure auto-updater
+autoUpdater.logger = require('electron-log');
+autoUpdater.logger.transports.file.level = 'info';
+autoUpdater.autoDownload = true; // Automatically download updates
+autoUpdater.autoInstallOnAppQuit = true; // Install on quit
+
+// Auto-updater events
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for updates...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available:', info);
+  // Notify the renderer process
+  if (mainWindow) {
+    mainWindow.webContents.send('update:available', info);
+  }
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available:', info);
+});
+
+autoUpdater.on('error', (err) => {
+  console.error('Error in auto-updater:', err);
+  if (mainWindow) {
+    mainWindow.webContents.send('update:error', err.message);
+  }
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  const message = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% (${progressObj.transferred}/${progressObj.total})`;
+  console.log(message);
+  if (mainWindow) {
+    mainWindow.webContents.send('update:download-progress', progressObj);
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded:', info);
+  if (mainWindow) {
+    mainWindow.webContents.send('update:downloaded', info);
+  }
+  // Optionally, you can prompt the user to restart
+  // autoUpdater.quitAndInstall() will restart and install the update
+});
+
+// IPC handlers for manual update control
+ipcMain.on('check-for-updates', () => {
+  autoUpdater.checkForUpdates();
+});
+
+ipcMain.on('install-update', () => {
+  autoUpdater.quitAndInstall();
+});
 
 function createLicenseWindow() {
   licenseWindow = new BrowserWindow({
@@ -118,6 +175,19 @@ app.whenReady().then(async () => {
   } else {
     // License is valid, create main window
     createWindow();
+  }
+
+  // Check for updates after app is ready (only in production)
+  if (app.isPackaged) {
+    // Check for updates on startup
+    setTimeout(() => {
+      autoUpdater.checkForUpdates();
+    }, 3000); // Wait 3 seconds after launch
+    
+    // Check for updates every hour
+    setInterval(() => {
+      autoUpdater.checkForUpdates();
+    }, 60 * 60 * 1000); // 60 minutes
   }
 
   app.on('activate', () => {

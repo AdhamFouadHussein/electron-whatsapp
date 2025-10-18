@@ -65,6 +65,16 @@ contextBridge.exposeInMainWorld('api', {
     checkForUpdates: () => ipcRenderer.invoke('system:checkForUpdates')
   },
 
+  // Auto-updater
+  updater: {
+    checkForUpdates: () => ipcRenderer.send('check-for-updates'),
+    installUpdate: () => ipcRenderer.send('install-update'),
+    onUpdateAvailable: (callback) => ipcRenderer.on('update:available', (_, info) => callback(info)),
+    onUpdateDownloaded: (callback) => ipcRenderer.on('update:downloaded', (_, info) => callback(info)),
+    onDownloadProgress: (callback) => ipcRenderer.on('update:download-progress', (_, progress) => callback(progress)),
+    onUpdateError: (callback) => ipcRenderer.on('update:error', (_, error) => callback(error))
+  },
+
   // License
   license: {
     check: () => ipcRenderer.invoke('license:check'),

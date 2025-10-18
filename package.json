@@ -22,6 +22,8 @@
     "@whiskeysockets/baileys": "^6.7.0",
     "axios": "^1.6.0",
     "dotenv": "^16.3.1",
+    "electron-log": "^5.4.3",
+    "electron-updater": "^6.6.2",
     "i18next": "^23.7.0",
     "i18next-fs-backend": "^2.3.0",
     "mysql2": "^3.6.5",
@@ -54,6 +56,14 @@
     "webpack-cli": "^5.1.4"
   },
   "build": {
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "AdhamFouadHussein",
+        "repo": "electron-whatsapp",
+        "private": true
+      }
+    ],
     "appId": "com.adhamfouad.whatsapp-manager",
     "productName": "WhatsApp Manager",
     "files": [
