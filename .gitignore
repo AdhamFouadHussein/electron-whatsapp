@@ -6,3 +6,5 @@ whatsapp-session/
 *.sh
 release/
 .DS_Store
+.env.production
+.env.example

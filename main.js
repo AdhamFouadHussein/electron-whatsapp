@@ -1,6 +1,24 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-require('dotenv').config();
+const fs = require('fs');
+
+// Load environment variables
+// In production (packaged app), load from extraResources
+// In development, load from root directory
+const envPath = app.isPackaged 
+  ? path.join(process.resourcesPath, '.env')
+  : path.join(__dirname, '.env');
+
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+} else {
+  console.warn('No .env file found at:', envPath);
+  // In production, try .env.production as fallback
+  const prodEnvPath = path.join(__dirname, '.env.production');
+  if (fs.existsSync(prodEnvPath)) {
+    require('dotenv').config({ path: prodEnvPath });
+  }
+}
 
 const { initializeBackend } = require('./src/backend/ipc-handlers');
 const licenseService = require('./src/backend/license-service');
