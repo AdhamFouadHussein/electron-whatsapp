@@ -33,16 +33,13 @@ autoUpdater.logger.transports.file.level = 'info';
 autoUpdater.autoDownload = true; // Automatically download updates
 autoUpdater.autoInstallOnAppQuit = true; // Install on quit
 
-// For private repos, set the GitHub token
-if (process.env.GH_TOKEN) {
+
   autoUpdater.setFeedURL({
     provider: 'github',
     owner: 'AdhamFouadHussein',
     repo: 'electron-whatsapp',
-    private: true,
-    token: process.env.GH_TOKEN
+    private: false,
   });
-}
 
 // Auto-updater events
 autoUpdater.on('checking-for-update', () => {
@@ -62,6 +59,11 @@ autoUpdater.on('update-not-available', (info) => {
 });
 
 autoUpdater.on('error', (err) => {
+  // Don't show errors for 404 (no releases available yet)
+  if (err.message && err.message.includes('404')) {
+    console.log('No releases available yet - this is normal for new repositories');
+    return;
+  }
   console.error('Error in auto-updater:', err);
   if (mainWindow) {
     mainWindow.webContents.send('update:error', err.message);
@@ -194,14 +196,22 @@ app.whenReady().then(async () => {
     // This prevents 404 errors when no releases exist yet
     setTimeout(() => {
       autoUpdater.checkForUpdates().catch(err => {
-        console.log('No updates available yet:', err.message);
+        // Silently fail if no releases exist yet
+        if (err.message && err.message.includes('404')) {
+          console.log('No releases published yet - auto-update will be available after first release');
+        } else {
+          console.log('Update check failed:', err.message);
+        }
       });
     }, 3000); // Wait 3 seconds after launch
     
     // Check for updates every hour
     setInterval(() => {
       autoUpdater.checkForUpdates().catch(err => {
-        console.log('Update check failed:', err.message);
+        // Silently ignore 404 errors
+        if (!err.message || !err.message.includes('404')) {
+          console.log('Update check failed:', err.message);
+        }
       });
     }, 60 * 60 * 1000); // 60 minutes
   }
