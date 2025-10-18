@@ -52,7 +52,40 @@ async function createEvent(event) {
     'INSERT INTO events (user_id, event_type, title, description, event_date, location, reminder_enabled) VALUES (?, ?, ?, ?, ?, ?, ?)',
     [event.user_id, event.event_type, event.title, event.description, event.event_date, event.location, event.reminder_enabled !== false]
   );
-  return { id: result.insertId, ...event };
+  
+  const eventId = result.insertId;
+  
+  // Automatically create a reminder 24 hours before the event if reminder is enabled
+  if (event.reminder_enabled !== false) {
+    try {
+      // Get user to fetch preferred language
+      const user = await getUser(event.user_id);
+      
+      // Get the default template for this event type and user's language
+      const templates = await getMessageTemplates(user.preferred_language);
+      const defaultTemplate = templates.find(
+        t => t.event_type === event.event_type && t.is_default
+      );
+      
+      // Calculate reminder time (24 hours before event)
+      const eventDate = new Date(event.event_date);
+      const reminderTime = new Date(eventDate.getTime() - (24 * 60 * 60 * 1000));
+      
+      // Only create reminder if it's in the future
+      if (reminderTime > new Date()) {
+        await getPool().query(
+          'INSERT INTO reminders (event_id, reminder_time, message_template_id, status) VALUES (?, ?, ?, ?)',
+          [eventId, reminderTime, defaultTemplate ? defaultTemplate.id : null, 'pending']
+        );
+        console.log(`✓ Auto-created reminder for event ${eventId} at ${reminderTime}`);
+      }
+    } catch (error) {
+      console.error('Failed to create automatic reminder:', error);
+      // Don't fail the event creation if reminder creation fails
+    }
+  }
+  
+  return { id: eventId, ...event };
 }
 
 async function updateEvent(id, event) {
@@ -60,6 +93,63 @@ async function updateEvent(id, event) {
     'UPDATE events SET user_id = ?, event_type = ?, title = ?, description = ?, event_date = ?, location = ?, reminder_enabled = ? WHERE id = ?',
     [event.user_id, event.event_type, event.title, event.description, event.event_date, event.location, event.reminder_enabled, id]
   );
+  
+  // Update or create reminder if reminder is enabled
+  if (event.reminder_enabled) {
+    try {
+      // Get user to fetch preferred language
+      const user = await getUser(event.user_id);
+      
+      // Get the default template for this event type and user's language
+      const templates = await getMessageTemplates(user.preferred_language);
+      const defaultTemplate = templates.find(
+        t => t.event_type === event.event_type && t.is_default
+      );
+      
+      // Calculate reminder time (24 hours before event)
+      const eventDate = new Date(event.event_date);
+      const reminderTime = new Date(eventDate.getTime() - (24 * 60 * 60 * 1000));
+      
+      // Check if a reminder already exists for this event
+      const [existingReminders] = await getPool().query(
+        'SELECT id FROM reminders WHERE event_id = ? AND status = "pending"',
+        [id]
+      );
+      
+      // Only update/create reminder if it's in the future
+      if (reminderTime > new Date()) {
+        if (existingReminders.length > 0) {
+          // Update existing reminder
+          await getPool().query(
+            'UPDATE reminders SET reminder_time = ?, message_template_id = ? WHERE id = ?',
+            [reminderTime, defaultTemplate ? defaultTemplate.id : null, existingReminders[0].id]
+          );
+          console.log(`✓ Updated reminder for event ${id} at ${reminderTime}`);
+        } else {
+          // Create new reminder
+          await getPool().query(
+            'INSERT INTO reminders (event_id, reminder_time, message_template_id, status) VALUES (?, ?, ?, ?)',
+            [id, reminderTime, defaultTemplate ? defaultTemplate.id : null, 'pending']
+          );
+          console.log(`✓ Auto-created reminder for event ${id} at ${reminderTime}`);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update/create automatic reminder:', error);
+      // Don't fail the event update if reminder update fails
+    }
+  } else {
+    // If reminder is disabled, cancel any pending reminders
+    try {
+      await getPool().query(
+        'UPDATE reminders SET status = "cancelled" WHERE event_id = ? AND status = "pending"',
+        [id]
+      );
+    } catch (error) {
+      console.error('Failed to cancel reminders:', error);
+    }
+  }
+  
   return { id, ...event };
 }
 

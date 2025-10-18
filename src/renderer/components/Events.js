@@ -74,14 +74,34 @@ function Events() {
     }
 
     try {
+      const isNewEvent = !editingEvent;
+      
       if (editingEvent) {
         await window.api.db.updateEvent(editingEvent.id, formData);
       } else {
         await window.api.db.createEvent(formData);
       }
+      
       setShowModal(false);
       resetForm();
       loadData();
+      
+      // Show success message with reminder info
+      if (formData.reminder_enabled) {
+        const eventDate = new Date(formData.event_date);
+        const reminderDate = new Date(eventDate.getTime() - (24 * 60 * 60 * 1000));
+        
+        if (reminderDate > new Date()) {
+          const message = isNewEvent 
+            ? `Event created successfully! A reminder has been automatically scheduled for 24 hours before the event (${reminderDate.toLocaleString()}).`
+            : `Event updated successfully! The reminder has been updated to 24 hours before the event (${reminderDate.toLocaleString()}).`;
+          alert(message);
+        } else {
+          alert('Event saved successfully! (No reminder created - event is less than 24 hours away)');
+        }
+      } else {
+        alert('Event saved successfully!');
+      }
     } catch (error) {
       console.error('Failed to save event:', error);
       alert('Failed to save event: ' + error.message);
@@ -598,6 +618,28 @@ function Events() {
                   <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '5px', marginLeft: '28px' }}>
                     {t('events.reminderEnabledHelp')}
                   </div>
+                  
+                  {formData.reminder_enabled && (
+                    <div style={{ 
+                      marginTop: '10px',
+                      marginLeft: '28px',
+                      padding: '12px',
+                      backgroundColor: '#e3f2fd',
+                      borderLeft: '4px solid #2196F3',
+                      borderRadius: '4px',
+                      fontSize: '13px'
+                    }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '5px', color: '#1976d2' }}>
+                        ℹ️ Automatic Reminder Info
+                      </div>
+                      <div style={{ color: '#555' }}>
+                        • A reminder will be automatically created <strong>24 hours before</strong> the event<br/>
+                        • Message template will be selected based on the <strong>event type</strong><br/>
+                        • Language will match the user's <strong>preferred language</strong><br/>
+                        • You can view/edit reminders in the Reminders section
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
