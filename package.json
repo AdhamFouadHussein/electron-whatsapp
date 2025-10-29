@@ -1,6 +1,6 @@
 {
   "name": "af-whatsapp-reminders",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Professional Multi-Device WhatsApp Automation Platform | Event Management & Intelligent Reminder System with Multi-Language Support, Dark Mode UI, and Enterprise-Grade MySQL Synchronization",
   "main": "main.js",
   "scripts": {
