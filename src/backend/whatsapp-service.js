@@ -39,7 +39,12 @@ class WhatsAppService {
       }
 
       const { state, saveCreds } = await useMultiFileAuthState(this.sessionPath);
-      const { version } = await fetchLatestBaileysVersion();
+  // Fetch latest baileys version info (log it for diagnostics)
+  const versionInfo = await fetchLatestBaileysVersion();
+  // Some versions of the library return an object, others return an array/tuple.
+  // Normalize and log for debugging.
+  let version = versionInfo && versionInfo.version ? versionInfo.version : versionInfo && versionInfo[0] ? versionInfo[0] : versionInfo;
+  console.log('Baileys version info:', versionInfo);
 
       this.sock = makeWASocket({
         version,
@@ -47,9 +52,11 @@ class WhatsAppService {
         printQRInTerminal: false, // Disable terminal QR printing for production
         browser: ['WhatsApp Reminder App', 'Desktop', '1.0.0']
       });
+      console.log('WASocket created');
 
       // Handle connection updates
       this.sock.ev.on('connection.update', async (update) => {
+        console.log('connection.update event:', JSON.stringify(update));
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
@@ -62,11 +69,26 @@ class WhatsAppService {
         }
 
         if (connection === 'close') {
-          const shouldReconnect = (lastDisconnect?.error instanceof Boom)
-            ? lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut
-            : true;
+          // Determine whether to attempt reconnection. The shape of lastDisconnect.error
+          // can vary across Baileys versions. Log and handle common cases safely.
+          let shouldReconnect = true;
+          try {
+            if (lastDisconnect && lastDisconnect.error) {
+              console.log('lastDisconnect.error:', lastDisconnect.error);
+              // If the disconnect indicates a logged out session, don't reconnect.
+              const err = lastDisconnect.error;
+              if (err === DisconnectReason.loggedOut ||
+                  (err && err.output && err.output.statusCode && String(err.output.statusCode) === String(DisconnectReason.loggedOut)) ||
+                  (err && err.message && String(err.message).toLowerCase().includes('logged out'))) {
+                shouldReconnect = false;
+              }
+            }
+          } catch (detErr) {
+            console.warn('Error while evaluating reconnect logic:', detErr);
+            shouldReconnect = true;
+          }
 
-          console.log('Connection closed due to', lastDisconnect?.error, ', reconnecting:', shouldReconnect);
+          console.log('Connection closed, lastDisconnect:', lastDisconnect, ', reconnecting:', shouldReconnect);
 
           if (shouldReconnect) {
             this.updateStatus('reconnecting');
@@ -75,7 +97,11 @@ class WhatsAppService {
             this.updateStatus('logged_out');
             // Clear session files if logged out
             if (fs.existsSync(this.sessionPath)) {
-              fs.rmSync(this.sessionPath, { recursive: true, force: true });
+              try {
+                fs.rmSync(this.sessionPath, { recursive: true, force: true });
+              } catch (rmErr) {
+                console.error('Failed to remove session files:', rmErr);
+              }
             }
           }
         } else if (connection === 'open') {

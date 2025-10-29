@@ -162,7 +162,7 @@ async function deleteEvent(id) {
 async function getReminders(status = null) {
   let query = `
     SELECT r.*, e.title as event_title, e.event_type, e.event_date, 
-           u.name as user_name, u.phone, u.preferred_language
+           u.id as user_id, u.name as user_name, u.phone, u.preferred_language
     FROM reminders r
     JOIN events e ON r.event_id = e.id
     JOIN users u ON e.user_id = u.id
@@ -179,13 +179,15 @@ async function getReminders(status = null) {
 }
 
 async function getPendingReminders() {
+  // Use UTC_TIMESTAMP() to compare reminder_time in UTC to avoid issues when the
+  // MySQL server time zone or clock differs from application/local time.
   const [rows] = await getPool().query(`
     SELECT r.*, e.title as event_title, e.event_type, e.event_date, e.location, e.description,
            u.id as user_id, u.name as user_name, u.phone, u.preferred_language
     FROM reminders r
     JOIN events e ON r.event_id = e.id
     JOIN users u ON e.user_id = u.id
-    WHERE r.status = 'pending' AND r.reminder_time <= NOW()
+    WHERE r.status = 'pending' AND r.reminder_time <= UTC_TIMESTAMP()
     ORDER BY r.reminder_time
   `);
   return rows;
@@ -208,8 +210,9 @@ async function updateReminder(id, reminder) {
 }
 
 async function updateReminderStatus(id, status, errorMessage = null) {
+  // Use UTC_TIMESTAMP() for sent_at to keep timestamps consistent in UTC
   await getPool().query(
-    'UPDATE reminders SET status = ?, sent_at = NOW(), error_message = ? WHERE id = ?',
+    'UPDATE reminders SET status = ?, sent_at = UTC_TIMESTAMP(), error_message = ? WHERE id = ?',
     [status, errorMessage, id]
   );
 }

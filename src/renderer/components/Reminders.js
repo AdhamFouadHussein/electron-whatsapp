@@ -33,6 +33,33 @@ function Reminders() {
     status: 'pending'
   });
 
+  // Helper: format a Date (or date-parsable value) to a datetime-local input value in local timezone
+  const toLocalDateTimeInputValue = (dateInput) => {
+    const d = new Date(dateInput);
+    const pad = (n) => String(n).padStart(2, '0');
+    const YYYY = d.getFullYear();
+    const MM = pad(d.getMonth() + 1);
+    const DD = pad(d.getDate());
+    const hh = pad(d.getHours());
+    const mm = pad(d.getMinutes());
+    return `${YYYY}-${MM}-${DD}T${hh}:${mm}`;
+  };
+
+  // Helper: convert a datetime-local input value (local time, e.g. '2025-10-29T13:10')
+  // to a UTC MySQL DATETIME string 'YYYY-MM-DD HH:MM:SS'
+  const toUTCMySQLDateTimeFromLocalInput = (localInput) => {
+    // Parse as local time
+    const d = new Date(localInput);
+    const pad = (n) => String(n).padStart(2, '0');
+    const YYYY = d.getUTCFullYear();
+    const MM = pad(d.getUTCMonth() + 1);
+    const DD = pad(d.getUTCDate());
+    const hh = pad(d.getUTCHours());
+    const mm = pad(d.getUTCMinutes());
+    const ss = pad(d.getUTCSeconds());
+    return `${YYYY}-${MM}-${DD} ${hh}:${mm}:${ss}`;
+  };
+
   useEffect(() => {
     loadData();
   }, []);
@@ -75,7 +102,8 @@ function Reminders() {
         if (!editingReminder) {
           const eventDate = new Date(selectedEvent.event_date);
           eventDate.setHours(eventDate.getHours() - 1);
-          const defaultReminderTime = eventDate.toISOString().slice(0, 16);
+          // Use local time for the datetime-local input value
+          const defaultReminderTime = toLocalDateTimeInputValue(eventDate);
           setFormData(prev => ({ ...prev, event_id: eventId, reminder_time: defaultReminderTime, file_id: '' }));
         } else {
           setFormData(prev => ({ ...prev, event_id: eventId, file_id: '' }));
@@ -101,8 +129,12 @@ function Reminders() {
 
     try {
       // Clean up formData - convert empty strings to null for optional fields
+      // Convert datetime-local (local) to UTC MySQL DATETIME string before saving
+      const reminderTimeForDb = toUTCMySQLDateTimeFromLocalInput(formData.reminder_time);
+
       const cleanedData = {
         ...formData,
+        reminder_time: reminderTimeForDb,
         message_template_id: formData.message_template_id || null,
         custom_message: formData.custom_message || null,
         file_id: formData.file_id || null
@@ -124,7 +156,8 @@ function Reminders() {
 
   const handleEdit = async (reminder) => {
     setEditingReminder(reminder);
-    const reminderTime = new Date(reminder.reminder_time).toISOString().slice(0, 16);
+    // Convert stored UTC/Date value to local datetime-local input value
+    const reminderTime = toLocalDateTimeInputValue(new Date(reminder.reminder_time));
     setFormData({
       event_id: reminder.event_id,
       reminder_time: reminderTime,

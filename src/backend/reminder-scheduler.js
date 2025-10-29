@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const {
-  getPendingReminders,
+  getReminders,
   updateReminderStatus,
   createMessageLog,
   getMessageTemplate,
@@ -57,20 +57,45 @@ class ReminderScheduler {
 
   async processReminders() {
     try {
-      const reminders = await getPendingReminders();
-      
-      if (reminders.length === 0) {
-        return;
-      }
+      console.log('ReminderScheduler: checking for pending reminders...');
+      console.log('WhatsApp service status:', whatsappService.getStatus());
 
-      console.log(`Processing ${reminders.length} pending reminder(s)...`);
+        // Fetch pending reminders from DB (status = 'pending') and filter by application time.
+        // This avoids relying on the remote MySQL server clock/timezone.
+        const allPending = await getReminders('pending');
+
+        if (!allPending || allPending.length === 0) {
+          console.log('No pending reminders found');
+          return;
+        }
+
+        // Filter reminders that are due according to the local application clock
+        const now = new Date();
+        const reminders = allPending.filter(r => new Date(r.reminder_time) <= now);
+
+        if (reminders.length === 0) {
+          console.log('No reminders are due right now (based on local clock)');
+          return;
+        }
+
+        console.log(`Processing ${reminders.length} pending reminder(s) that are due now...`);
 
       for (const reminder of reminders) {
         try {
+          if (!whatsappService.isConnected()) {
+            console.warn(`Skipping reminder ${reminder.id} — WhatsApp not connected (status=${whatsappService.getStatus()})`);
+            // Do not mark as failed yet; we'll retry on next run.
+            continue;
+          }
+
           await this.sendReminder(reminder);
         } catch (error) {
           console.error(`Error processing reminder ${reminder.id}:`, error);
-          await updateReminderStatus(reminder.id, 'failed', error.message);
+          try {
+            await updateReminderStatus(reminder.id, 'failed', error.message);
+          } catch (uErr) {
+            console.error('Failed to update reminder status after send error:', uErr);
+          }
         }
       }
     } catch (error) {
