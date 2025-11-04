@@ -399,5 +399,165 @@ module.exports = {
   
   // Settings
   getSetting,
-  setSetting
+  setSetting,
+  
+  // Campaigns
+  createCampaign,
+  getCampaigns,
+  getCampaign,
+  updateCampaignStatus,
+  addCampaignRecipients,
+  getCampaignRecipients,
+  updateRecipientStatus,
+  incrementCampaignCounters
 };
+
+// Campaign operations
+async function createCampaign(campaign) {
+  const [result] = await getPool().query(
+    'INSERT INTO campaigns (name, message_text, min_delay_sec, max_delay_sec, total_recipients) VALUES (?, ?, ?, ?, ?)',
+    [campaign.name, campaign.message_text, campaign.min_delay_sec || 5, campaign.max_delay_sec || 15, campaign.total_recipients || 0]
+  );
+  return { id: result.insertId, ...campaign };
+}
+
+async function getCampaigns() {
+  const [rows] = await getPool().query(`
+    SELECT 
+      id,
+      name,
+      message_text,
+      status,
+      total_recipients,
+      sent_count,
+      failed_count,
+      min_delay_sec,
+      max_delay_sec,
+      UNIX_TIMESTAMP(created_at) * 1000 AS created_at_epoch_ms,
+      UNIX_TIMESTAMP(started_at) * 1000 AS started_at_epoch_ms,
+      UNIX_TIMESTAMP(completed_at) * 1000 AS completed_at_epoch_ms
+    FROM campaigns 
+    ORDER BY created_at DESC
+  `);
+  return rows;
+}
+
+async function getCampaign(id) {
+  const [rows] = await getPool().query(`
+    SELECT 
+      id,
+      name,
+      message_text,
+      status,
+      total_recipients,
+      sent_count,
+      failed_count,
+      min_delay_sec,
+      max_delay_sec,
+      UNIX_TIMESTAMP(created_at) * 1000 AS created_at_epoch_ms,
+      UNIX_TIMESTAMP(started_at) * 1000 AS started_at_epoch_ms,
+      UNIX_TIMESTAMP(completed_at) * 1000 AS completed_at_epoch_ms
+    FROM campaigns 
+    WHERE id = ?
+  `, [id]);
+  return rows[0];
+}
+
+async function updateCampaignStatus(id, status, extraFields = {}) {
+  const updates = ['status = ?'];
+  const params = [status];
+  
+  if (status === 'running' && !extraFields.started_at) {
+    updates.push('started_at = NOW()');
+  }
+  if (status === 'completed' && !extraFields.completed_at) {
+    updates.push('completed_at = NOW()');
+  }
+  
+  Object.keys(extraFields).forEach(key => {
+    updates.push(`${key} = ?`);
+    params.push(extraFields[key]);
+  });
+  
+  params.push(id);
+  
+  await getPool().query(
+    `UPDATE campaigns SET ${updates.join(', ')} WHERE id = ?`,
+    params
+  );
+  return { success: true };
+}
+
+async function addCampaignRecipients(campaignId, recipients) {
+  if (recipients.length === 0) return { success: true, count: 0 };
+  
+  const values = recipients.map(r => [campaignId, r.phone, r.name || null]);
+  await getPool().query(
+    'INSERT INTO campaign_recipients (campaign_id, phone, name) VALUES ?',
+    [values]
+  );
+  
+  // Update campaign total_recipients count
+  await getPool().query(
+    'UPDATE campaigns SET total_recipients = total_recipients + ? WHERE id = ?',
+    [recipients.length, campaignId]
+  );
+  
+  return { success: true, count: recipients.length };
+}
+
+async function getCampaignRecipients(campaignId, status = null) {
+  let query = `
+    SELECT 
+      id,
+      campaign_id,
+      phone,
+      name,
+      status,
+      UNIX_TIMESTAMP(sent_at) * 1000 AS sent_at_epoch_ms,
+      error_message
+    FROM campaign_recipients 
+    WHERE campaign_id = ?
+  `;
+  const params = [campaignId];
+  
+  if (status) {
+    query += ' AND status = ?';
+    params.push(status);
+  }
+  
+  query += ' ORDER BY id';
+  
+  const [rows] = await getPool().query(query, params);
+  return rows;
+}
+
+async function updateRecipientStatus(id, status, extraFields = {}) {
+  const updates = ['status = ?'];
+  const params = [status];
+  
+  if (status === 'sent' && !extraFields.sent_at) {
+    updates.push('sent_at = NOW()');
+  }
+  
+  Object.keys(extraFields).forEach(key => {
+    updates.push(`${key} = ?`);
+    params.push(extraFields[key]);
+  });
+  
+  params.push(id);
+  
+  await getPool().query(
+    `UPDATE campaign_recipients SET ${updates.join(', ')} WHERE id = ?`,
+    params
+  );
+  return { success: true };
+}
+
+async function incrementCampaignCounters(campaignId, sentIncrement = 0, failedIncrement = 0) {
+  await getPool().query(
+    'UPDATE campaigns SET sent_count = sent_count + ?, failed_count = failed_count + ? WHERE id = ?',
+    [sentIncrement, failedIncrement, campaignId]
+  );
+  return { success: true };
+}

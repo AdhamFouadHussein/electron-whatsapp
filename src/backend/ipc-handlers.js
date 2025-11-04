@@ -4,6 +4,7 @@ const dbOps = require('./db-operations');
 const whatsappService = require('./whatsapp-service');
 const reminderScheduler = require('./reminder-scheduler');
 const licenseService = require('./license-service');
+const campaignService = require('./campaign-service');
 const fs = require('fs');
 const path = require('path');
 
@@ -469,4 +470,46 @@ ipcMain.handle('license:getHardwareId', async () => {
   return await licenseService.getHardwareId();
 });
 
+// Campaign IPC handlers
+ipcMain.handle('campaign:create', async (event, campaignData) => {
+  return await dbOps.createCampaign(campaignData);
+});
+
+ipcMain.handle('campaign:getAll', async () => {
+  return await dbOps.getCampaigns();
+});
+
+ipcMain.handle('campaign:get', async (event, id) => {
+  return await dbOps.getCampaign(id);
+});
+
+ipcMain.handle('campaign:parseCSV', async (event, csvContent) => {
+  return await campaignService.parseCSV(csvContent);
+});
+
+ipcMain.handle('campaign:addRecipients', async (event, { campaignId, recipients }) => {
+  return await dbOps.addCampaignRecipients(campaignId, recipients);
+});
+
+ipcMain.handle('campaign:getRecipients', async (event, campaignId) => {
+  return await dbOps.getCampaignRecipients(campaignId);
+});
+
+ipcMain.handle('campaign:start', async (event, campaignId) => {
+  return await campaignService.startCampaign(campaignId);
+});
+
+ipcMain.handle('campaign:pause', async (event, campaignId) => {
+  return await campaignService.pauseCampaign(campaignId);
+});
+
+ipcMain.handle('campaign:resume', async (event, campaignId) => {
+  return await campaignService.resumeCampaign(campaignId);
+});
+
+ipcMain.handle('campaign:getStatus', async () => {
+  return campaignService.getActiveCampaignStatus();
+});
+
 module.exports = { initializeBackend, loadDatabaseConfig };
+

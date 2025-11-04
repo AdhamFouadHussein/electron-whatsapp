@@ -179,6 +179,39 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    await getPool().query(`
+      CREATE TABLE IF NOT EXISTS campaigns (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        message_text TEXT NOT NULL,
+        status ENUM('draft', 'running', 'paused', 'completed', 'cancelled') DEFAULT 'draft',
+        total_recipients INT DEFAULT 0,
+        sent_count INT DEFAULT 0,
+        failed_count INT DEFAULT 0,
+        min_delay_sec INT DEFAULT 5,
+        max_delay_sec INT DEFAULT 15,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        started_at TIMESTAMP NULL,
+        completed_at TIMESTAMP NULL,
+        INDEX idx_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await getPool().query(`
+      CREATE TABLE IF NOT EXISTS campaign_recipients (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        campaign_id INT NOT NULL,
+        phone VARCHAR(50) NOT NULL,
+        name VARCHAR(255),
+        status ENUM('pending', 'sent', 'failed') DEFAULT 'pending',
+        sent_at TIMESTAMP NULL,
+        error_message TEXT,
+        FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+        INDEX idx_campaign_id (campaign_id),
+        INDEX idx_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
     console.log('✓ Database schema initialized successfully');
     
     // Insert default message templates

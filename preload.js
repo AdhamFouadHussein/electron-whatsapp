@@ -84,6 +84,20 @@ contextBridge.exposeInMainWorld('api', {
     getHardwareId: () => ipcRenderer.invoke('license:getHardwareId')
   },
 
+  // Campaign operations
+  campaign: {
+    create: (campaign) => ipcRenderer.invoke('campaign:create', campaign),
+    getAll: () => ipcRenderer.invoke('campaign:getAll'),
+    get: (id) => ipcRenderer.invoke('campaign:get', id),
+    parseCSV: (csvContent) => ipcRenderer.invoke('campaign:parseCSV', csvContent),
+    addRecipients: (data) => ipcRenderer.invoke('campaign:addRecipients', data),
+    getRecipients: (campaignId) => ipcRenderer.invoke('campaign:getRecipients', campaignId),
+    start: (campaignId) => ipcRenderer.invoke('campaign:start', campaignId),
+    pause: (campaignId) => ipcRenderer.invoke('campaign:pause', campaignId),
+    resume: (campaignId) => ipcRenderer.invoke('campaign:resume', campaignId),
+    getStatus: () => ipcRenderer.invoke('campaign:getStatus')
+  },
+
   // Notify main process of license activation
   licenseActivated: () => ipcRenderer.send('license:activated')
 });
