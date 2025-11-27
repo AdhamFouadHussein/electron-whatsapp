@@ -97,7 +97,7 @@ function Dashboard({ setCurrentView }) {
 
         <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => setCurrentView('birthdays')}>
           <FiGift className="stat-icon" style={{ color: '#ff6b6b' }} />
-          <div className="stat-label">Upcoming Birthdays (7 days)</div>
+          <div className="stat-label">{t('dashboard.upcomingBirthdaysLabel')}</div>
           <div className="stat-value">{stats.upcomingBirthdays}</div>
         </div>
       </div>
