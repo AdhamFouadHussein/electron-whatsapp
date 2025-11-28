@@ -15,5 +15,11 @@ export const api = {
     createEvent: (event: any): Promise<any> => window.api.db.createEvent(event),
     updateEvent: (id: number, event: any): Promise<any> => window.api.db.updateEvent(id, event),
     deleteEvent: (id: number): Promise<any> => window.api.db.deleteEvent(id),
+
+    // Reminder management
+    getReminders: (status?: string): Promise<any[]> => window.api.db.getReminders(status),
+    createReminder: (reminder: any): Promise<any> => window.api.db.createReminder(reminder),
+    updateReminder: (id: number, reminder: any): Promise<any> => window.api.db.updateReminder(id, reminder),
+    deleteReminder: (id: number): Promise<any> => window.api.db.deleteReminder(id),
 };
 

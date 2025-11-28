@@ -161,11 +161,14 @@ async function deleteEvent(id) {
 // Reminder operations
 async function getReminders(status = null) {
   let query = `
-    SELECT r.*, e.title as event_title, e.event_type, e.event_date, 
+    SELECT r.*, r.reminder_time as reminder_date,
+           COALESCE(r.custom_message, mt.template_text) as message,
+           e.title as event_title, e.event_type, e.event_date, 
            u.id as user_id, u.name as user_name, u.phone, u.preferred_language
     FROM reminders r
     JOIN events e ON r.event_id = e.id
     JOIN users u ON e.user_id = u.id
+    LEFT JOIN message_templates mt ON r.message_template_id = mt.id
   `;
 
   if (status) {
@@ -194,6 +197,15 @@ async function getPendingReminders() {
 }
 
 async function createReminder(reminder) {
+  // If event_id is missing but user_id is present, create a placeholder event
+  if (!reminder.event_id && reminder.user_id) {
+    const [eventResult] = await getPool().query(
+      'INSERT INTO events (user_id, event_type, title, description, event_date, reminder_enabled) VALUES (?, ?, ?, ?, ?, ?)',
+      [reminder.user_id, 'custom', 'Manual Reminder', reminder.custom_message, reminder.reminder_time, false]
+    );
+    reminder.event_id = eventResult.insertId;
+  }
+
   const [result] = await getPool().query(
     'INSERT INTO reminders (event_id, reminder_time, message_template_id, custom_message, file_id) VALUES (?, ?, ?, ?, ?)',
     [reminder.event_id, reminder.reminder_time, reminder.message_template_id, reminder.custom_message, reminder.file_id]
@@ -373,7 +385,7 @@ async function getMessagesChartData() {
         FROM message_logs
         WHERE sent_at >= CURDATE() - INTERVAL 7 DAY
         GROUP BY day
-        ORDER BY sent_at
+        ORDER BY MIN(sent_at)
     `);
   return rows;
 }
