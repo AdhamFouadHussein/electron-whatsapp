@@ -102,7 +102,7 @@ export default function NewEventPage() {
     <div className="min-h-screen bg-background">
       <Sidebar />
       <Header />
-      <main className="ml-55 mt-20 space-y-8 p-8">
+      <main className=" mt-20 space-y-8 p-8">
         <div className="flex items-center gap-4">
           <Link href="/events">
             <Button variant="ghost" size="icon">
