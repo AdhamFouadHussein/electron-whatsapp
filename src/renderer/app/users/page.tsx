@@ -8,9 +8,8 @@ import { Header } from "@/components/header"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Plus, Edit, Trash2, MoreVertical, MessageCircle } from "lucide-react"
+import { Search, Plus, Edit, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 
@@ -178,17 +177,27 @@ export default function UsersPage() {
 
   const handleSaveUser = async (user: Partial<User>) => {
     try {
+      // Sanitize data before sending to backend
+      const userToSave = {
+        ...user,
+        // Convert empty strings to null for optional fields
+        email: user.email || null,
+        date_of_birth: user.date_of_birth || null,
+        notes: user.notes || null,
+      }
+
       if (user.id) {
         // Update existing user
-        await api.updateUser(user.id, user)
+        await api.updateUser(user.id, userToSave)
       } else {
         // Create new user
-        await api.createUser(user)
+        await api.createUser(userToSave)
       }
       setEditingUser(null)
       fetchUsers() // Refetch users to see the changes
     } catch (error) {
       console.error("Failed to save user:", error)
+      alert("Failed to save user. Please check the console for details.")
     }
   }
 
@@ -201,7 +210,7 @@ export default function UsersPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar />
+      <Sidebar currentPage="users" />
       <Header />
       <main className=" mt-20 space-y-8 p-8">
         {/* Header */}
@@ -272,30 +281,20 @@ export default function UsersPage() {
                       {user.date_of_birth ? format(new Date(user.date_of_birth), "PPP") : "N/A"}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="gap-2 cursor-pointer" onClick={() => setEditingUser(user)}>
-                            <Edit className="h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2 cursor-pointer">
-                            <MessageCircle className="h-4 w-4" />
-                            Send Message
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="gap-2 cursor-pointer text-red-600"
-                            onClick={() => handleDelete(user.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => setEditingUser(user)} title="Edit User">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => handleDelete(user.id)}
+                          title="Delete User"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

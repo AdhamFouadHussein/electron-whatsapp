@@ -4,15 +4,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AlertCircle } from "lucide-react"
 
-const AVAILABLE_USERS = [
-  { id: 1, name: "Ahmed Hassan", phone: "+966501234567" },
-  { id: 2, name: "Sarah Ali", phone: "+966502345678" },
-  { id: 3, name: "Mohamed Ibrahim", phone: "+966503456789" },
-  { id: 4, name: "Fatima Khan", phone: "+966504567890" },
-  { id: 5, name: "Hassan Saleh", phone: "+966505678901" },
-]
+interface User {
+  id: number
+  name: string
+  phone: string
+}
 
 interface UserSearchInputProps {
+  users: User[]
   value: string
   onChange: (value: string) => void
   error?: string
@@ -21,6 +20,7 @@ interface UserSearchInputProps {
 }
 
 export function UserSearchInput({
+  users,
   value,
   onChange,
   error,
@@ -29,23 +29,23 @@ export function UserSearchInput({
 }: UserSearchInputProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedUser, setSelectedUser] = useState<(typeof AVAILABLE_USERS)[0] | null>(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (value) {
-      const user = AVAILABLE_USERS.find((u) => u.id.toString() === value)
+      const user = users.find((u) => u.id.toString() === value)
       setSelectedUser(user || null)
     } else {
       setSelectedUser(null)
     }
-  }, [value])
+  }, [value, users])
 
-  const filteredUsers = AVAILABLE_USERS.filter(
+  const filteredUsers = users.filter(
     (user) => user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm),
   )
 
-  const handleSelectUser = (user: (typeof AVAILABLE_USERS)[0]) => {
+  const handleSelectUser = (user: User) => {
     setSelectedUser(user)
     onChange(user.id.toString())
     setIsOpen(false)

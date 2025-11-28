@@ -10,23 +10,28 @@ contextBridge.exposeInMainWorld('api', {
     createUser: (user) => ipcRenderer.invoke('db:createUser', user),
     updateUser: (id, user) => ipcRenderer.invoke('db:updateUser', id, user),
     deleteUser: (id) => ipcRenderer.invoke('db:deleteUser', id),
-    
+
+    getDashboardStats: () => ipcRenderer.invoke('db:getDashboardStats'),
+    getMessagesChartData: () => ipcRenderer.invoke('db:getMessagesChartData'),
+    getTodaysMessageStatus: () => ipcRenderer.invoke('db:getTodaysMessageStatus'),
+    getUpcomingEventsList: (limit) => ipcRenderer.invoke('db:getUpcomingEventsList', limit),
+
     getEvents: (userId) => ipcRenderer.invoke('db:getEvents', userId),
     createEvent: (event) => ipcRenderer.invoke('db:createEvent', event),
     updateEvent: (id, event) => ipcRenderer.invoke('db:updateEvent', id, event),
     deleteEvent: (id) => ipcRenderer.invoke('db:deleteEvent', id),
-    
+
     getReminders: () => ipcRenderer.invoke('db:getReminders'),
     createReminder: (reminder) => ipcRenderer.invoke('db:createReminder', reminder),
     updateReminder: (id, reminder) => ipcRenderer.invoke('db:updateReminder', id, reminder),
     deleteReminder: (id) => ipcRenderer.invoke('db:deleteReminder', id),
-    
+
     getMessageTemplates: (language) => ipcRenderer.invoke('db:getMessageTemplates', language),
     saveMessageTemplate: (template) => ipcRenderer.invoke('db:saveMessageTemplate', template),
-    
+
     getMessageLogs: (userId) => ipcRenderer.invoke('db:getMessageLogs', userId),
     getUpcomingBirthdays: (daysAhead) => ipcRenderer.invoke('db:getUpcomingBirthdays', daysAhead),
-    
+
     uploadFile: (file) => ipcRenderer.invoke('db:uploadFile', file),
     getFile: (id) => ipcRenderer.invoke('db:getFile', id),
     getUserFiles: (userId) => ipcRenderer.invoke('db:getUserFiles', userId),

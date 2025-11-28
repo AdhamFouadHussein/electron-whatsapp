@@ -5,6 +5,12 @@ declare global {
     interface Window {
         api: {
             db: {
+                // Dashboard
+                getDashboardStats: () => Promise<any>;
+                getMessagesChartData: () => Promise<any>;
+                getTodaysMessageStatus: () => Promise<any>;
+                getUpcomingEventsList: (limit: number) => Promise<any[]>;
+
                 // Users
                 getUsers: () => Promise<any[]>;
                 createUser: (userData: any) => Promise<any>;
@@ -12,7 +18,7 @@ declare global {
                 deleteUser: (id: number) => Promise<void>;
 
                 // Events
-                getEvents: () => Promise<any[]>;
+                getEvents: (userId?: number) => Promise<any[]>;
                 createEvent: (eventData: any) => Promise<any>;
                 updateEvent: (id: number, eventData: any) => Promise<any>;
                 deleteEvent: (id: number) => Promise<void>;
