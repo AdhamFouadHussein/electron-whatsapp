@@ -167,6 +167,23 @@ ipcMain.handle('db:deleteFile', async (event, id) => {
   return await dbOps.deleteFile(id);
 });
 
+// Dashboard IPC handlers
+ipcMain.handle('db:getDashboardStats', async () => {
+  return await dbOps.getDashboardStats();
+});
+
+ipcMain.handle('db:getMessagesChartData', async () => {
+  return await dbOps.getMessagesChartData();
+});
+
+ipcMain.handle('db:getTodaysMessageStatus', async () => {
+  return await dbOps.getTodaysMessageStatus();
+});
+
+ipcMain.handle('db:getUpcomingEventsList', async (event, limit) => {
+  return await dbOps.getUpcomingEventsList(limit);
+});
+
 // WhatsApp IPC handlers
 ipcMain.handle('whatsapp:connect', async () => {
   try {

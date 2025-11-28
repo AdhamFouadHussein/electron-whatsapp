@@ -52,25 +52,25 @@ async function createEvent(event) {
     'INSERT INTO events (user_id, event_type, title, description, event_date, location, reminder_enabled) VALUES (?, ?, ?, ?, ?, ?, ?)',
     [event.user_id, event.event_type, event.title, event.description, event.event_date, event.location, event.reminder_enabled !== false]
   );
-  
+
   const eventId = result.insertId;
-  
+
   // Automatically create a reminder 24 hours before the event if reminder is enabled
   if (event.reminder_enabled !== false) {
     try {
       // Get user to fetch preferred language
       const user = await getUser(event.user_id);
-      
+
       // Get the default template for this event type and user's language
       const templates = await getMessageTemplates(user.preferred_language);
       const defaultTemplate = templates.find(
         t => t.event_type === event.event_type && t.is_default
       );
-      
+
       // Calculate reminder time (24 hours before event)
       const eventDate = new Date(event.event_date);
       const reminderTime = new Date(eventDate.getTime() - (24 * 60 * 60 * 1000));
-      
+
       // Only create reminder if it's in the future
       if (reminderTime > new Date()) {
         await getPool().query(
@@ -84,7 +84,7 @@ async function createEvent(event) {
       // Don't fail the event creation if reminder creation fails
     }
   }
-  
+
   return { id: eventId, ...event };
 }
 
@@ -93,29 +93,29 @@ async function updateEvent(id, event) {
     'UPDATE events SET user_id = ?, event_type = ?, title = ?, description = ?, event_date = ?, location = ?, reminder_enabled = ? WHERE id = ?',
     [event.user_id, event.event_type, event.title, event.description, event.event_date, event.location, event.reminder_enabled, id]
   );
-  
+
   // Update or create reminder if reminder is enabled
   if (event.reminder_enabled) {
     try {
       // Get user to fetch preferred language
       const user = await getUser(event.user_id);
-      
+
       // Get the default template for this event type and user's language
       const templates = await getMessageTemplates(user.preferred_language);
       const defaultTemplate = templates.find(
         t => t.event_type === event.event_type && t.is_default
       );
-      
+
       // Calculate reminder time (24 hours before event)
       const eventDate = new Date(event.event_date);
       const reminderTime = new Date(eventDate.getTime() - (24 * 60 * 60 * 1000));
-      
+
       // Check if a reminder already exists for this event
       const [existingReminders] = await getPool().query(
         'SELECT id FROM reminders WHERE event_id = ? AND status = "pending"',
         [id]
       );
-      
+
       // Only update/create reminder if it's in the future
       if (reminderTime > new Date()) {
         if (existingReminders.length > 0) {
@@ -149,7 +149,7 @@ async function updateEvent(id, event) {
       console.error('Failed to cancel reminders:', error);
     }
   }
-  
+
   return { id, ...event };
 }
 
@@ -167,13 +167,13 @@ async function getReminders(status = null) {
     JOIN events e ON r.event_id = e.id
     JOIN users u ON e.user_id = u.id
   `;
-  
+
   if (status) {
     query += ' WHERE r.status = ?';
     const [rows] = await getPool().query(query + ' ORDER BY r.reminder_time', [status]);
     return rows;
   }
-  
+
   const [rows] = await getPool().query(query + ' ORDER BY r.reminder_time');
   return rows;
 }
@@ -259,10 +259,10 @@ async function saveMessageTemplate(template) {
 // File operations
 async function uploadFile(fileData) {
   // Convert array back to Buffer if needed
-  const fileBuffer = Array.isArray(fileData.file_data) 
-    ? Buffer.from(fileData.file_data) 
+  const fileBuffer = Array.isArray(fileData.file_data)
+    ? Buffer.from(fileData.file_data)
     : fileData.file_data;
-    
+
   const [result] = await getPool().query(
     'INSERT INTO files (user_id, filename, original_name, file_type, file_size, storage_type, file_data, mime_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     [fileData.user_id, fileData.filename, fileData.original_name, fileData.file_type, fileData.file_size, 'mysql', fileBuffer, fileData.mime_type]
@@ -356,20 +356,84 @@ async function setSetting(key, value) {
   );
 }
 
+// Dashboard operations
+async function getDashboardStats() {
+  const pool = getPool();
+  const [[{ totalUsers }]] = await pool.query('SELECT COUNT(*) as totalUsers FROM users');
+  const [[{ upcomingEvents }]] = await pool.query('SELECT COUNT(*) as upcomingEvents FROM events WHERE event_date > NOW()');
+  const [[{ pendingReminders }]] = await pool.query('SELECT COUNT(*) as pendingReminders FROM reminders WHERE status = "pending"');
+  const [[{ messagesToday }]] = await pool.query('SELECT COUNT(*) as messagesToday FROM message_logs WHERE DATE(sent_at) = CURDATE()');
+
+  return { totalUsers, upcomingEvents, pendingReminders, messagesToday };
+}
+
+async function getMessagesChartData() {
+  const [rows] = await getPool().query(`
+        SELECT DATE_FORMAT(sent_at, '%a') as day, COUNT(*) as value
+        FROM message_logs
+        WHERE sent_at >= CURDATE() - INTERVAL 7 DAY
+        GROUP BY day
+        ORDER BY sent_at
+    `);
+  return rows;
+}
+
+async function getTodaysMessageStatus() {
+  const [rows] = await getPool().query(`
+        SELECT status, COUNT(*) as value
+        FROM message_logs
+        WHERE DATE(sent_at) = CURDATE()
+        GROUP BY status
+    `);
+
+  const stats = { sent: 0, failed: 0, pending: 0 };
+  rows.forEach(row => {
+    if (stats[row.status] !== undefined) {
+      stats[row.status] = row.value;
+    }
+  });
+
+  const total = Object.values(stats).reduce((sum, value) => sum + value, 0);
+  if (total === 0) return [{ name: 'No Data', value: 100 }];
+
+  return Object.entries(stats).map(([name, value]) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    value: Math.round((value / total) * 100)
+  }));
+}
+
+async function getUpcomingEventsList(limit = 4) {
+  const [rows] = await getPool().query(`
+        SELECT e.id, u.name as user, e.title as event, e.event_date as date, 'pending' as status
+        FROM events e
+        JOIN users u ON e.user_id = u.id
+        WHERE e.event_date > NOW()
+        ORDER BY e.event_date ASC
+        LIMIT ?
+    `, [limit]);
+  return rows;
+}
+
 module.exports = {
+  // Dashboard
+  getDashboardStats,
+  getMessagesChartData,
+  getTodaysMessageStatus,
+  getUpcomingEventsList,
+
   // Users
   getUsers,
   getUser,
   createUser,
   updateUser,
   deleteUser,
-  
+
   // Events
   getEvents,
   createEvent,
   updateEvent,
   deleteEvent,
-  
+
   // Reminders
   getReminders,
   getPendingReminders,
@@ -377,30 +441,30 @@ module.exports = {
   updateReminder,
   updateReminderStatus,
   deleteReminder,
-  
+
   // Message templates
   getMessageTemplates,
   getMessageTemplate,
   saveMessageTemplate,
-  
+
   // Files
   uploadFile,
   getFile,
   getUserFiles,
   getAllFiles,
   deleteFile,
-  
+
   // Message logs
   createMessageLog,
   getMessageLogs,
-  
+
   // Birthdays
   getUpcomingBirthdays,
-  
+
   // Settings
   getSetting,
   setSetting,
-  
+
   // Campaigns
   createCampaign,
   getCampaigns,
@@ -466,21 +530,21 @@ async function getCampaign(id) {
 async function updateCampaignStatus(id, status, extraFields = {}) {
   const updates = ['status = ?'];
   const params = [status];
-  
+
   if (status === 'running' && !extraFields.started_at) {
     updates.push('started_at = NOW()');
   }
   if (status === 'completed' && !extraFields.completed_at) {
     updates.push('completed_at = NOW()');
   }
-  
+
   Object.keys(extraFields).forEach(key => {
     updates.push(`${key} = ?`);
     params.push(extraFields[key]);
   });
-  
+
   params.push(id);
-  
+
   await getPool().query(
     `UPDATE campaigns SET ${updates.join(', ')} WHERE id = ?`,
     params
@@ -490,19 +554,19 @@ async function updateCampaignStatus(id, status, extraFields = {}) {
 
 async function addCampaignRecipients(campaignId, recipients) {
   if (recipients.length === 0) return { success: true, count: 0 };
-  
+
   const values = recipients.map(r => [campaignId, r.phone, r.name || null]);
   await getPool().query(
     'INSERT INTO campaign_recipients (campaign_id, phone, name) VALUES ?',
     [values]
   );
-  
+
   // Update campaign total_recipients count
   await getPool().query(
     'UPDATE campaigns SET total_recipients = total_recipients + ? WHERE id = ?',
     [recipients.length, campaignId]
   );
-  
+
   return { success: true, count: recipients.length };
 }
 
@@ -520,14 +584,14 @@ async function getCampaignRecipients(campaignId, status = null) {
     WHERE campaign_id = ?
   `;
   const params = [campaignId];
-  
+
   if (status) {
     query += ' AND status = ?';
     params.push(status);
   }
-  
+
   query += ' ORDER BY id';
-  
+
   const [rows] = await getPool().query(query, params);
   return rows;
 }
@@ -535,18 +599,18 @@ async function getCampaignRecipients(campaignId, status = null) {
 async function updateRecipientStatus(id, status, extraFields = {}) {
   const updates = ['status = ?'];
   const params = [status];
-  
+
   if (status === 'sent' && !extraFields.sent_at) {
     updates.push('sent_at = NOW()');
   }
-  
+
   Object.keys(extraFields).forEach(key => {
     updates.push(`${key} = ?`);
     params.push(extraFields[key]);
   });
-  
+
   params.push(id);
-  
+
   await getPool().query(
     `UPDATE campaign_recipients SET ${updates.join(', ')} WHERE id = ?`,
     params
