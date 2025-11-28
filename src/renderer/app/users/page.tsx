@@ -64,7 +64,7 @@ export default function UsersPage() {
     <div className="min-h-screen bg-background">
       <Sidebar />
       <Header />
-      <main className="ml-64 mt-20 space-y-8 p-8">
+      <main className="ml-55 mt-20 space-y-8 p-8">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

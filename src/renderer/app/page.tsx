@@ -72,7 +72,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Sidebar />
       <Header />
-      <main className="ml-64 mt-20 space-y-8 p-8">
+      <main className="ml-55 mt-20 space-y-8 p-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-4xl font-bold">Welcome Back</h1>
           <p className="text-muted-foreground">Here's what's happening with your reminders today</p>
@@ -177,8 +177,8 @@ export default function Dashboard() {
                   <span className="text-sm text-muted-foreground">{event.date}</span>
                   <div
                     className={`rounded-full px-3 py-1 text-xs font-medium ${event.status === "pending"
-                        ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
-                        : "bg-green-500/20 text-green-700 dark:text-green-400"
+                      ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
+                      : "bg-green-500/20 text-green-700 dark:text-green-400"
                       }`}
                   >
                     {event.status}
