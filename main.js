@@ -6,7 +6,7 @@ const fs = require('fs');
 // Load environment variables
 // In production (packaged app), load from extraResources
 // In development, load from root directory
-const envPath = app.isPackaged 
+const envPath = app.isPackaged
   ? path.join(process.resourcesPath, '.env')
   : path.join(__dirname, '.env');
 
@@ -22,10 +22,11 @@ if (fs.existsSync(envPath)) {
 }
 
 const { initializeBackend } = require('./src/backend/ipc-handlers');
-const licenseService = require('./src/backend/license-service');
+// Old license service disabled - now using account-based authentication
+// const licenseService = require('./src/backend/license-service');
 
 let mainWindow;
-let licenseWindow;
+// let licenseWindow; // Disabled - no longer using license window
 
 // Configure auto-updater
 autoUpdater.logger = require('electron-log');
@@ -34,12 +35,12 @@ autoUpdater.autoDownload = true; // Automatically download updates
 autoUpdater.autoInstallOnAppQuit = true; // Install on quit
 
 
-  autoUpdater.setFeedURL({
-    provider: 'github',
-    owner: 'AdhamFouadHussein',
-    repo: 'electron-whatsapp',
-    private: false,
-  });
+autoUpdater.setFeedURL({
+  provider: 'github',
+  owner: 'AdhamFouadHussein',
+  repo: 'electron-whatsapp',
+  private: false,
+});
 
 // Auto-updater events
 autoUpdater.on('checking-for-update', () => {
@@ -96,47 +97,9 @@ ipcMain.on('install-update', () => {
   autoUpdater.quitAndInstall();
 });
 
-function createLicenseWindow() {
-  licenseWindow = new BrowserWindow({
-    width: 600,
-    height: 750,
-    minWidth: 500,
-    minHeight: 650,
-    resizable: true,
-    frame: true,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    },
-    backgroundColor: '#1e1e1e',
-    show: false,
-    icon: path.join(__dirname, 'assets', 'icon.png')
-  });
-
-  licenseWindow.loadFile('dist/license.html');
-
-  licenseWindow.once('ready-to-show', () => {
-    licenseWindow.show();
-  });
-
-  licenseWindow.on('closed', () => {
-    licenseWindow = null;
-    // If license window is closed without activation, quit app
-    if (!mainWindow) {
-      app.quit();
-    }
-  });
-}
-
-// Handle successful license activation
-ipcMain.on('license:activated', () => {
-  if (licenseWindow) {
-    licenseWindow.close();
-    licenseWindow = null;
-  }
-  createWindow();
-});
+// Old license window functions disabled - now using account-based authentication in frontend
+// function createLicenseWindow() { ... }
+// ipcMain.on('license:activated', ...) { ... }
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -179,16 +142,9 @@ function createWindow() {
 
 // App lifecycle
 app.whenReady().then(async () => {
-  // Check license before creating main window
-  const licenseCheck = await licenseService.checkLicense();
-  
-  if (!licenseCheck.valid) {
-    // Show license activation window
-    createLicenseWindow();
-  } else {
-    // License is valid, create main window
-    createWindow();
-  }
+  // No longer checking old license service - using account-based auth instead
+  // Authentication is handled in the frontend login page
+  createWindow();
 
   // Check for updates after app is ready (only in production)
   if (app.isPackaged) {
@@ -204,7 +160,7 @@ app.whenReady().then(async () => {
         }
       });
     }, 3000); // Wait 3 seconds after launch
-    
+
     // Check for updates every hour
     setInterval(() => {
       autoUpdater.checkForUpdates().catch(err => {

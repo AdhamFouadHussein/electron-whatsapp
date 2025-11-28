@@ -3,8 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: {
-    main: './src/renderer/index.js',
-    license: './src/license-entry.jsx'
+    main: './src/renderer/index.tsx'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -14,18 +13,37 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                '@babel/preset-env',
+                ['@babel/preset-react', { runtime: 'automatic' }],
+                '@babel/preset-typescript'
+              ]
+            }
+          }
+        ]
+      },
+      {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env', '@babel/preset-react']
+            presets: [
+              '@babel/preset-env',
+              ['@babel/preset-react', { runtime: 'automatic' }]
+            ]
           }
         }
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: ['style-loader', 'css-loader', 'postcss-loader']
       }
     ]
   },
@@ -34,15 +52,13 @@ module.exports = {
       template: './index.html',
       filename: 'index.html',
       chunks: ['main']
-    }),
-    new HtmlWebpackPlugin({
-      template: './license.html',
-      filename: 'license.html',
-      chunks: ['license']
     })
   ],
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    alias: {
+      '@': path.resolve(__dirname, 'src/renderer')
+    }
   },
   target: 'electron-renderer',
   mode: process.env.NODE_ENV || 'development'

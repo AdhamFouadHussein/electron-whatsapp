@@ -3,7 +3,8 @@ const { testConnection, initializeDatabase } = require('./database');
 const dbOps = require('./db-operations');
 const whatsappService = require('./whatsapp-service');
 const reminderScheduler = require('./reminder-scheduler');
-const licenseService = require('./license-service');
+// Old license service disabled - now using account-based authentication
+// const licenseService = require('./license-service');
 const campaignService = require('./campaign-service');
 const fs = require('fs');
 const path = require('path');
@@ -14,17 +15,17 @@ async function loadDatabaseConfig() {
     const { app } = require('electron');
     const userDataPath = app.getPath('userData');
     const configPath = path.join(userDataPath, 'database-config.json');
-    
+
     if (fs.existsSync(configPath)) {
       const savedConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      
+
       // Update environment variables with saved config
       if (savedConfig.host) process.env.DB_HOST = savedConfig.host;
       if (savedConfig.port) process.env.DB_PORT = savedConfig.port;
       if (savedConfig.user) process.env.DB_USER = savedConfig.user;
       if (savedConfig.password) process.env.DB_PASSWORD = savedConfig.password;
       if (savedConfig.database) process.env.DB_NAME = savedConfig.database;
-      
+
       console.log('Database configuration loaded from user data');
     }
   } catch (error) {
@@ -36,39 +37,39 @@ async function loadDatabaseConfig() {
 async function initializeBackend(mainWindow) {
   try {
     console.log('Initializing backend services...');
-    
+
     // Load database configuration from user data directory
     await loadDatabaseConfig();
-    
+
     // Test database connection
     await testConnection();
-    
+
     // Initialize database schema
     await initializeDatabase();
-    
+
     // Connect WhatsApp
     whatsappService.setQRCallback((qr) => {
       if (mainWindow) {
         mainWindow.webContents.send('whatsapp:qr', qr);
       }
     });
-    
+
     whatsappService.setStatusCallback((status) => {
       if (mainWindow) {
         mainWindow.webContents.send('whatsapp:status', status);
       }
     });
-    
+
     // Try to auto-connect WhatsApp (will use saved session if exists)
     try {
       await whatsappService.connect();
     } catch (error) {
       console.log('WhatsApp auto-connect failed (this is normal for first time setup):', error.message);
     }
-    
+
     // Start reminder scheduler
     reminderScheduler.start();
-    
+
     console.log('✓ Backend services initialized successfully');
   } catch (error) {
     console.error('Failed to initialize backend services:', error);
@@ -203,7 +204,7 @@ ipcMain.handle('whatsapp:sendMessageWithFile', async (event, phone, message, fil
     if (!file) {
       throw new Error('File not found');
     }
-    
+
     if (file.storage_type === 'mysql' && file.file_data) {
       return await whatsappService.sendMessageWithBuffer(
         phone,
@@ -238,7 +239,7 @@ ipcMain.handle('whatsapp:sendBirthdayWish', async (event, userId) => {
       message = birthdayTemplate.template_text.replace(/\{\{name\}\}/g, user.name);
     } else {
       // Fallback message
-      message = user.preferred_language === 'ar' 
+      message = user.preferred_language === 'ar'
         ? `عيد ميلاد سعيد ${user.name}! 🎉🎂 أتمنى لك يوماً رائعاً مليئاً بالفرح والسعادة!`
         : `Happy Birthday ${user.name}! 🎉🎂 Wishing you a wonderful day filled with joy and happiness!`;
     }
@@ -314,11 +315,11 @@ ipcMain.handle('settings:getDatabaseConfig', async () => {
     const fs = require('fs');
     const path = require('path');
     const { app } = require('electron');
-    
+
     // Try to read from user data directory first
     const userDataPath = app.getPath('userData');
     const configPath = path.join(userDataPath, 'database-config.json');
-    
+
     let config = {
       host: process.env.DB_HOST || 'localhost',
       port: process.env.DB_PORT || '3306',
@@ -326,7 +327,7 @@ ipcMain.handle('settings:getDatabaseConfig', async () => {
       password: process.env.DB_PASSWORD || '',
       database: process.env.DB_NAME || 'whatsapp_reminder_app'
     };
-    
+
     // If user config exists, use it
     if (fs.existsSync(configPath)) {
       try {
@@ -338,7 +339,7 @@ ipcMain.handle('settings:getDatabaseConfig', async () => {
           password: savedConfig.password || config.password,
           database: savedConfig.database || config.database
         };
-        
+
         // Update environment variables with saved config
         process.env.DB_HOST = config.host;
         process.env.DB_PORT = config.port;
@@ -349,7 +350,7 @@ ipcMain.handle('settings:getDatabaseConfig', async () => {
         console.error('Error parsing saved database config:', parseError);
       }
     }
-    
+
     return config;
   } catch (error) {
     console.error('Error getting database config:', error);
@@ -363,11 +364,11 @@ ipcMain.handle('settings:setDatabaseConfig', async (event, config) => {
     const path = require('path');
     const { app } = require('electron');
     const { createPool } = require('./database');
-    
+
     // Get user data directory (writable location)
     const userDataPath = app.getPath('userData');
     const configPath = path.join(userDataPath, 'database-config.json');
-    
+
     // Save database configuration to user data directory
     const configData = {
       host: config.host,
@@ -377,26 +378,26 @@ ipcMain.handle('settings:setDatabaseConfig', async (event, config) => {
       database: config.database,
       updatedAt: new Date().toISOString()
     };
-    
+
     // Ensure directory exists
     const configDir = path.dirname(configPath);
     if (!fs.existsSync(configDir)) {
       fs.mkdirSync(configDir, { recursive: true });
     }
-    
+
     // Write configuration file
     fs.writeFileSync(configPath, JSON.stringify(configData, null, 2));
-    
+
     // Update process.env for immediate effect
     process.env.DB_HOST = config.host;
     process.env.DB_PORT = config.port;
     process.env.DB_USER = config.user;
     process.env.DB_PASSWORD = config.password;
     process.env.DB_NAME = config.database;
-    
+
     // Recreate the database pool with new settings
     createPool();
-    
+
     console.log('Database configuration saved and pool recreated with new settings');
     return { success: true };
   } catch (error) {
@@ -449,26 +450,26 @@ ipcMain.handle('system:checkForUpdates', async () => {
   return { available: false };
 });
 
-// License IPC handlers
-ipcMain.handle('license:check', async () => {
-  return await licenseService.checkLicense();
-});
-
-ipcMain.handle('license:activate', async (event, { licenseKey, email }) => {
-  return await licenseService.activateLicense(licenseKey, email);
-});
-
-ipcMain.handle('license:deactivate', async () => {
-  return await licenseService.deactivateLicense();
-});
-
-ipcMain.handle('license:getInfo', async () => {
-  return await licenseService.getLicenseInfo();
-});
-
-ipcMain.handle('license:getHardwareId', async () => {
-  return await licenseService.getHardwareId();
-});
+// Old License IPC handlers - DISABLED (using account-based auth now)
+// ipcMain.handle('license:check', async () => {
+//   return await licenseService.checkLicense();
+// });
+// 
+// ipcMain.handle('license:activate', async (event, { licenseKey, email }) => {
+//   return await licenseService.activateLicense(licenseKey, email);
+// });
+// 
+// ipcMain.handle('license:deactivate', async () => {
+//   return await licenseService.deactivateLicense();
+// });
+// 
+// ipcMain.handle('license:getInfo', async () => {
+//   return await licenseService.getLicenseInfo();
+// });
+// 
+// ipcMain.handle('license:getHardwareId', async () => {
+//   return await licenseService.getHardwareId();
+// });
 
 // Campaign IPC handlers
 ipcMain.handle('campaign:create', async (event, campaignData) => {
