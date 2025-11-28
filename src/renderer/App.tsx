@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/sidebar';
 import { Header } from './components/header';
 import { ThemeProvider } from './components/theme-provider';
 import { Toaster } from './components/ui/sonner';
 import { AuthStorage, AuthAPI, User } from './lib/auth-api';
 import { toast } from 'sonner';
+import { NavigationProvider, useNavigation } from './context/NavigationContext';
 
 // Import pages
 import Dashboard from './app/page';
@@ -19,8 +20,8 @@ import WhatsAppPage from './app/whatsapp/page';
 import SettingsPage from './app/settings/page';
 import LoginPage from './app/login/page';
 
-const App: React.FC = () => {
-    const [currentPage, setCurrentPage] = useState('dashboard');
+const AppContent: React.FC = () => {
+    const { currentPage, setCurrentPage } = useNavigation();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -66,7 +67,7 @@ const App: React.FC = () => {
         };
 
         checkAuth();
-    }, []);
+    }, [setCurrentPage]);
 
     const handleLogin = () => {
         setIsAuthenticated(true);
@@ -82,10 +83,6 @@ const App: React.FC = () => {
             alert('You need an active subscription or trial to use this application. Please visit geek-business.site to subscribe.');
         }
     };
-
-    const handleNavigate = useCallback((page: string) => {
-        setCurrentPage(page);
-    }, []);
 
     const handleLogout = async () => {
         const auth = AuthStorage.getAuth();
@@ -157,11 +154,10 @@ const App: React.FC = () => {
             ) : (
                 <div className="flex h-screen w-screen overflow-hidden bg-background">
                     <Sidebar
-                        onNavigate={handleNavigate}
                         currentPage={currentPage}
                         onLogout={handleLogout}
                     />
-                    <div className="flex-1 flex flex-col overflow-hidden ml-64">
+                    <div className="flex-1 flex flex-col overflow-hidden ">
                         <Header />
                         <main className="flex-1 overflow-y-auto p-8 pt-24">
                             {renderPage()}
@@ -173,5 +169,11 @@ const App: React.FC = () => {
         </ThemeProvider>
     );
 };
+
+const App: React.FC = () => (
+    <NavigationProvider>
+        <AppContent />
+    </NavigationProvider>
+);
 
 export default App;

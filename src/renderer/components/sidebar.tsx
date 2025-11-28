@@ -14,6 +14,7 @@ import {
   Settings,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useNavigation } from "../context/NavigationContext"
 
 const navigation = [
   { name: "Dashboard", href: "dashboard", icon: LayoutDashboard },
@@ -29,12 +30,12 @@ const navigation = [
 ]
 
 interface SidebarProps {
-  onNavigate: (page: string) => void;
   currentPage: string;
   onLogout?: () => void;
 }
 
-export function Sidebar({ onNavigate, currentPage, onLogout }: SidebarProps) {
+export function Sidebar({ currentPage, onLogout }: SidebarProps) {
+  const { setCurrentPage } = useNavigation();
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       {/* Header */}
@@ -56,7 +57,7 @@ export function Sidebar({ onNavigate, currentPage, onLogout }: SidebarProps) {
             return (
               <button
                 key={item.href}
-                onClick={() => onNavigate(item.href)}
+                onClick={() => setCurrentPage(item.href)}
                 className={cn(
                   "w-full flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200",
                   isActive
