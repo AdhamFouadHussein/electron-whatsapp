@@ -15,6 +15,7 @@ import EventsPage from './app/events/page';
 import RemindersPage from './app/reminders/page';
 import BirthdaysPage from './app/birthdays/page';
 import TemplatesPage from './app/templates/page';
+import NewTemplatePage from './app/templates/new/page';
 import CampaignsPage from './app/campaigns/page';
 import NewCampaignPage from './app/campaigns/new/page';
 import CampaignDetailsPage from './app/campaigns/details/page';
@@ -115,6 +116,16 @@ const AppContent: React.FC = () => {
             return <CampaignDetailsPage campaignId={campaignId} />;
         }
 
+        if (currentPage.startsWith('templates/edit/')) {
+            const templateId = parseInt(currentPage.split('/').pop() || '0');
+            return <NewTemplatePage editId={templateId} />;
+        }
+
+        if (currentPage.startsWith('templates/duplicate/')) {
+            const templateId = parseInt(currentPage.split('/').pop() || '0');
+            return <NewTemplatePage duplicateId={templateId} />;
+        }
+
         switch (currentPage) {
             case 'dashboard':
                 return <Dashboard />;
@@ -128,6 +139,8 @@ const AppContent: React.FC = () => {
                 return <BirthdaysPage />;
             case 'templates':
                 return <TemplatesPage />;
+            case 'templates/new':
+                return <NewTemplatePage />;
             case 'campaigns':
                 return <CampaignsPage />;
             case 'campaigns/new':

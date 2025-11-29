@@ -255,20 +255,33 @@ async function deleteReminder(id) {
 
 // Message template operations
 async function getMessageTemplates(language = null) {
+  let rows;
   if (language) {
-    const [rows] = await getPool().query(
+    [rows] = await getPool().query(
       'SELECT * FROM message_templates WHERE language = ? ORDER BY event_type, name',
       [language]
     );
-    return rows;
+  } else {
+    [rows] = await getPool().query('SELECT * FROM message_templates ORDER BY event_type, language, name');
   }
-  const [rows] = await getPool().query('SELECT * FROM message_templates ORDER BY event_type, language, name');
-  return rows;
+
+  return rows.map(t => ({
+    ...t,
+    variables: typeof t.variables === 'string' ? JSON.parse(t.variables) : (t.variables || []),
+    is_default: Boolean(t.is_default)
+  }));
 }
 
 async function getMessageTemplate(id) {
   const [rows] = await getPool().query('SELECT * FROM message_templates WHERE id = ?', [id]);
-  return rows[0];
+  if (!rows[0]) return null;
+
+  const template = rows[0];
+  return {
+    ...template,
+    variables: typeof template.variables === 'string' ? JSON.parse(template.variables) : (template.variables || []),
+    is_default: Boolean(template.is_default)
+  };
 }
 
 async function saveMessageTemplate(template) {
@@ -285,6 +298,11 @@ async function saveMessageTemplate(template) {
     );
     return { id: result.insertId, ...template };
   }
+}
+
+async function deleteMessageTemplate(id) {
+  await getPool().query('DELETE FROM message_templates WHERE id = ?', [id]);
+  return { success: true };
 }
 
 // File operations
@@ -478,6 +496,7 @@ module.exports = {
   getMessageTemplates,
   getMessageTemplate,
   saveMessageTemplate,
+  deleteMessageTemplate,
 
   // Files
   uploadFile,

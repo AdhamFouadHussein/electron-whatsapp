@@ -138,8 +138,16 @@ ipcMain.handle('db:getMessageTemplates', async (event, language) => {
   return await dbOps.getMessageTemplates(language);
 });
 
+ipcMain.handle('db:getMessageTemplate', async (event, id) => {
+  return await dbOps.getMessageTemplate(id);
+});
+
 ipcMain.handle('db:saveMessageTemplate', async (event, template) => {
   return await dbOps.saveMessageTemplate(template);
+});
+
+ipcMain.handle('db:deleteMessageTemplate', async (event, id) => {
+  return await dbOps.deleteMessageTemplate(id);
 });
 
 ipcMain.handle('db:getMessageLogs', async (event, userId) => {

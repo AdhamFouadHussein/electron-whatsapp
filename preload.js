@@ -28,7 +28,9 @@ contextBridge.exposeInMainWorld('api', {
     deleteReminder: (id) => ipcRenderer.invoke('db:deleteReminder', id),
 
     getMessageTemplates: (language) => ipcRenderer.invoke('db:getMessageTemplates', language),
+    getMessageTemplate: (id) => ipcRenderer.invoke('db:getMessageTemplate', id),
     saveMessageTemplate: (template) => ipcRenderer.invoke('db:saveMessageTemplate', template),
+    deleteMessageTemplate: (id) => ipcRenderer.invoke('db:deleteMessageTemplate', id),
 
     getMessageLogs: (userId) => ipcRenderer.invoke('db:getMessageLogs', userId),
     getUpcomingBirthdays: (daysAhead) => ipcRenderer.invoke('db:getUpcomingBirthdays', daysAhead),

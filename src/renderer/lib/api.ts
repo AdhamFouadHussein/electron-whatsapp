@@ -34,5 +34,14 @@ export const api = {
     pauseCampaign: (campaignId: number): Promise<any> => window.api.campaign.pause(campaignId),
     resumeCampaign: (campaignId: number): Promise<any> => window.api.campaign.resume(campaignId),
     deleteCampaign: (campaignId: number): Promise<any> => window.api.campaign.delete(campaignId),
+
+    // Message templates
+    getMessageTemplates: (language?: string): Promise<any[]> => window.api.db.getMessageTemplates(language),
+    getMessageTemplate: (id: number): Promise<any> => window.api.db.getMessageTemplate(id),
+    saveMessageTemplate: (template: any): Promise<any> => window.api.db.saveMessageTemplate(template),
+    deleteMessageTemplate: (id: number): Promise<any> => window.api.db.deleteMessageTemplate(id),
+
+    // Message logs
+    getMessageLogs: (userId?: number): Promise<any[]> => window.api.db.getMessageLogs(userId),
 };
 

@@ -30,9 +30,9 @@ declare global {
                 deleteReminder: (id: number) => Promise<void>;
 
                 // Templates
-                getMessageTemplates: () => Promise<any[]>;
-                createMessageTemplate: (templateData: any) => Promise<any>;
-                updateMessageTemplate: (id: number, templateData: any) => Promise<any>;
+                getMessageTemplates: (language?: string) => Promise<any[]>;
+                getMessageTemplate: (id: number) => Promise<any>;
+                saveMessageTemplate: (templateData: any) => Promise<any>;
                 deleteMessageTemplate: (id: number) => Promise<void>;
 
                 // Files
@@ -42,7 +42,7 @@ declare global {
                 deleteFile: (id: number) => Promise<void>;
 
                 // Message Logs
-                getMessageLogs: () => Promise<any[]>;
+                getMessageLogs: (userId?: number) => Promise<any[]>;
             };
 
             campaign: {
