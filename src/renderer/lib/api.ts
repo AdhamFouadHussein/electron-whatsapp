@@ -60,6 +60,16 @@ export const api = {
         sendBirthdayWish: (userId: number) => window.api.whatsapp.sendBirthdayWish(userId),
         onQRCode: (callback: (qr: string) => void) => window.api.whatsapp.onQRCode(callback),
         onStatusChange: (callback: (status: string) => void) => window.api.whatsapp.onStatusChange(callback),
+    },
+
+    settings: {
+        getTheme: () => window.api.settings.getTheme(),
+        setTheme: (theme: string) => window.api.settings.setTheme(theme),
+        getLanguage: () => window.api.settings.getLanguage(),
+        setLanguage: (language: string) => window.api.settings.setLanguage(language),
+        getDatabaseConfig: () => window.api.settings.getDatabaseConfig(),
+        setDatabaseConfig: (config: any) => window.api.settings.setDatabaseConfig(config),
+        testDatabaseConnection: (config: any) => window.api.settings.testDatabaseConnection(config),
     }
 };
 

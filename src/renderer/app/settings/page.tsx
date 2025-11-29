@@ -1,22 +1,100 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Moon, Sun, Globe, Database, Lock, Bell, Save } from "lucide-react"
+import { Moon, Sun, Globe, Database, Lock, Bell, Save, Loader2, CheckCircle2, XCircle } from "lucide-react"
 import { useTheme } from "next-themes"
+import { api } from "@/lib/api"
+import { toast } from "sonner"
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const [isSaving, setIsSaving] = useState(false)
+  const [isTesting, setIsTesting] = useState(false)
+  const [dbConfig, setDbConfig] = useState({
+    host: "localhost",
+    port: "3306",
+    user: "root",
+    password: "",
+    database: "whatsapp_reminder_app"
+  })
+  const [language, setLanguage] = useState("en")
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const config = await api.settings.getDatabaseConfig()
+        if (config) {
+          setDbConfig({
+            host: config.host || "localhost",
+            port: config.port?.toString() || "3306",
+            user: config.user || "root",
+            password: config.password || "",
+            database: config.database || "whatsapp_reminder_app"
+          })
+        }
+
+        const lang = await api.settings.getLanguage()
+        if (lang) setLanguage(lang)
+      } catch (error) {
+        console.error("Failed to load settings:", error)
+      }
+    }
+    loadSettings()
+  }, [])
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme)
+    api.settings.setTheme(newTheme)
+  }
+
+  const handleLanguageChange = (newLang: string) => {
+    setLanguage(newLang)
+    api.settings.setLanguage(newLang)
+  }
+
+  const handleDbConfigChange = (key: string, value: string) => {
+    setDbConfig(prev => ({ ...prev, [key]: value }))
+  }
+
+  const handleTestConnection = async () => {
+    setIsTesting(true)
+    try {
+      const success = await api.settings.testDatabaseConnection({
+        ...dbConfig,
+        port: parseInt(dbConfig.port)
+      })
+      if (success) {
+        toast.success("Database connection successful")
+      } else {
+        toast.error("Database connection failed")
+      }
+    } catch (error) {
+      console.error("Test connection error:", error)
+      toast.error("Database connection failed")
+    } finally {
+      setIsTesting(false)
+    }
+  }
 
   const handleSave = async () => {
     setIsSaving(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsSaving(false)
+    try {
+      await api.settings.setDatabaseConfig({
+        ...dbConfig,
+        port: parseInt(dbConfig.port)
+      })
+      toast.success("Settings saved successfully")
+    } catch (error) {
+      console.error("Failed to save settings:", error)
+      toast.error("Failed to save settings")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -40,7 +118,7 @@ export default function SettingsPage() {
 
             <div className="space-y-3">
               <Label>Color Theme</Label>
-              <Select value={theme || "dark"} onValueChange={setTheme}>
+              <Select value={theme || "dark"} onValueChange={handleThemeChange}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -66,7 +144,7 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="space-y-3">
                 <Label>Language</Label>
-                <Select defaultValue="en">
+                <Select value={language} onValueChange={handleLanguageChange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -143,35 +221,57 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="space-y-3">
                 <Label htmlFor="db-host">Host</Label>
-                <Input id="db-host" placeholder="localhost" defaultValue="localhost" className="border-border/50" />
+                <Input
+                  id="db-host"
+                  value={dbConfig.host}
+                  onChange={(e) => handleDbConfigChange("host", e.target.value)}
+                  className="border-border/50"
+                />
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="db-port">Port</Label>
-                <Input id="db-port" placeholder="3306" defaultValue="3306" className="border-border/50" />
+                <Input
+                  id="db-port"
+                  value={dbConfig.port}
+                  onChange={(e) => handleDbConfigChange("port", e.target.value)}
+                  className="border-border/50"
+                />
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="db-user">User</Label>
-                <Input id="db-user" placeholder="root" defaultValue="root" className="border-border/50" />
+                <Input
+                  id="db-user"
+                  value={dbConfig.user}
+                  onChange={(e) => handleDbConfigChange("user", e.target.value)}
+                  className="border-border/50"
+                />
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="db-password">Password</Label>
-                <Input id="db-password" type="password" placeholder="••••••••" className="border-border/50" />
+                <Input
+                  id="db-password"
+                  type="password"
+                  value={dbConfig.password}
+                  onChange={(e) => handleDbConfigChange("password", e.target.value)}
+                  className="border-border/50"
+                />
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="db-name">Database Name</Label>
                 <Input
                   id="db-name"
-                  placeholder="whatsapp_reminder_app"
-                  defaultValue="whatsapp_reminder_app"
+                  value={dbConfig.database}
+                  onChange={(e) => handleDbConfigChange("database", e.target.value)}
                   className="border-border/50"
                 />
               </div>
 
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleTestConnection} disabled={isTesting}>
+                {isTesting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Test Connection
               </Button>
             </div>
@@ -201,7 +301,7 @@ export default function SettingsPage() {
 
           {/* Save Button */}
           <Button size="lg" className="gap-2 w-full" onClick={handleSave} disabled={isSaving}>
-            <Save className="h-4 w-4" />
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             {isSaving ? "Saving..." : "Save Changes"}
           </Button>
         </div>

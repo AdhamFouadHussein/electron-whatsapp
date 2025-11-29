@@ -78,6 +78,16 @@ declare global {
                 onStatusChange: (callback: (status: string) => void) => void;
             };
 
+            settings: {
+                getTheme: () => Promise<string>;
+                setTheme: (theme: string) => Promise<void>;
+                getLanguage: () => Promise<string>;
+                setLanguage: (language: string) => Promise<void>;
+                getDatabaseConfig: () => Promise<any>;
+                setDatabaseConfig: (config: any) => Promise<void>;
+                testDatabaseConnection: (config: any) => Promise<boolean>;
+            };
+
             license: {
                 verify: (key: string, email: string) => Promise<any>;
                 getStatus: () => Promise<any>;
