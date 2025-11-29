@@ -687,6 +687,20 @@ async function deleteCampaign(id) {
   return { success: true };
 }
 
+async function updateCampaign(id, campaign) {
+  await getPool().query(
+    'UPDATE campaigns SET name = ?, message_text = ? WHERE id = ?',
+    [campaign.name, campaign.message_text, id]
+  );
+  return { id, ...campaign };
+}
+
+async function clearCampaignRecipients(campaignId) {
+  await getPool().query('DELETE FROM campaign_recipients WHERE campaign_id = ?', [campaignId]);
+  await getPool().query('UPDATE campaigns SET total_recipients = 0 WHERE id = ?', [campaignId]);
+  return { success: true };
+}
+
 // Event Type operations
 async function getEventTypes() {
   const [rows] = await getPool().query('SELECT * FROM event_types ORDER BY name');
@@ -784,6 +798,8 @@ module.exports = {
   updateRecipientStatus,
   incrementCampaignCounters,
   deleteCampaign,
+  updateCampaign,
+  clearCampaignRecipients,
 
   // Event Types
   getEventTypes,

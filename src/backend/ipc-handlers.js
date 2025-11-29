@@ -557,6 +557,14 @@ ipcMain.handle('campaign:delete', async (event, id) => {
   return await dbOps.deleteCampaign(id);
 });
 
+ipcMain.handle('campaign:update', async (event, { id, campaign }) => {
+  return await dbOps.updateCampaign(id, campaign);
+});
+
+ipcMain.handle('campaign:clearRecipients', async (event, campaignId) => {
+  return await dbOps.clearCampaignRecipients(campaignId);
+});
+
 // Event Type IPC handlers
 console.log('Registering Event Type handlers...');
 ipcMain.handle('db:getEventTypes', async () => {

@@ -256,12 +256,10 @@ export default function CampaignsPage() {
                         {campaign.status === "draft" && (
                           <DropdownMenuItem
                             className="gap-2 cursor-pointer"
-                            onClick={() =>
-                              toast({
-                                title: "Info",
-                                description: "Edit functionality coming soon",
-                              })
-                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setCurrentPage(`campaigns/edit/${campaign.id}`);
+                            }}
                           >
                             <Edit className="h-4 w-4" />
                             Edit

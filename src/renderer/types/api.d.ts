@@ -59,10 +59,12 @@ declare global {
 
             campaign: {
                 create: (campaign: any) => Promise<any>;
+                update: (data: { id: number; campaign: any }) => Promise<any>;
                 getAll: () => Promise<any[]>;
                 get: (id: number) => Promise<any>;
                 parseCSV: (csvContent: string) => Promise<any>;
                 addRecipients: (data: { campaignId: number; recipients: any[] }) => Promise<any>;
+                clearRecipients: (campaignId: number) => Promise<any>;
                 getRecipients: (campaignId: number) => Promise<any[]>;
                 start: (campaignId: number) => Promise<any>;
                 pause: (campaignId: number) => Promise<any>;

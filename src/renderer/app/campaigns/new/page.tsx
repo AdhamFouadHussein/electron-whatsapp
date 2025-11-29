@@ -13,7 +13,7 @@ import { useToast } from '@/components/ui/use-toast';
 interface User {
   id: number;
   name: string;
-  phoneNumber: string;
+  phone: string;
   tags?: string[];
 }
 
@@ -22,7 +22,11 @@ interface CsvRecipient {
   phone: string;
 }
 
-export default function NewCampaignPage() {
+interface NewCampaignPageProps {
+  editId?: number;
+}
+
+export default function NewCampaignPage({ editId }: NewCampaignPageProps) {
   const { setCurrentPage } = useNavigation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -35,14 +39,23 @@ export default function NewCampaignPage() {
     name: '',
     messageTemplate: '',
     scheduledTime: '',
-  }); useEffect(() => {
-    loadUsers();
-  }, []);
+  });
+
+  useEffect(() => {
+    const init = async () => {
+      const fetchedUsers = await loadUsers();
+      if (editId && fetchedUsers) {
+        await loadCampaign(editId, fetchedUsers);
+      }
+    };
+    init();
+  }, [editId]);
 
   const loadUsers = async () => {
     try {
       const fetchedUsers = await api.getUsers();
       setUsers(fetchedUsers);
+      return fetchedUsers;
     } catch (error) {
       console.error('Failed to load users:', error);
       toast({
@@ -50,6 +63,46 @@ export default function NewCampaignPage() {
         description: "Failed to load users",
         variant: "destructive",
       });
+      return null;
+    }
+  };
+
+  const loadCampaign = async (id: number, currentUsers: User[]) => {
+    try {
+      setIsLoading(true);
+      const campaign = await api.getCampaign(id);
+      const recipients = await api.getCampaignRecipients(id);
+
+      setFormData({
+        name: campaign.name,
+        messageTemplate: campaign.message_text,
+        scheduledTime: '',
+      });
+
+      const userPhoneMap = new Map(currentUsers.map(u => [u.phone, u.id]));
+      const newSelectedUsers: number[] = [];
+      const newCsvRecipients: CsvRecipient[] = [];
+
+      recipients.forEach((r: any) => {
+        if (userPhoneMap.has(r.phone)) {
+          newSelectedUsers.push(userPhoneMap.get(r.phone)!);
+        } else {
+          newCsvRecipients.push({ name: r.name || '', phone: r.phone });
+        }
+      });
+
+      setSelectedUsers(newSelectedUsers);
+      setCsvRecipients(newCsvRecipients);
+
+    } catch (error) {
+      console.error('Failed to load campaign:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load campaign details",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -116,7 +169,7 @@ export default function NewCampaignPage() {
 
     const dbRecipients = users
       .filter(u => selectedUsers.includes(u.id))
-      .map(u => ({ name: u.name, phone: u.phoneNumber }));
+      .map(u => ({ name: u.name, phone: u.phone }));
 
     const allRecipients = [...dbRecipients, ...csvRecipients];
 
@@ -136,20 +189,35 @@ export default function NewCampaignPage() {
         await api.createUsers(csvRecipients);
       }
 
-      // 2. Create the campaign
-      const newCampaign = await api.createCampaign({
-        name: formData.name,
-        message_text: formData.messageTemplate,
-        scheduledTime: formData.scheduledTime ? new Date(formData.scheduledTime).toISOString() : undefined,
-        status: 'draft'
-      });
+      // 2. Create or Update the campaign
+      let campaignId = editId;
+
+      if (editId) {
+        await api.updateCampaign(editId, {
+          name: formData.name,
+          message_text: formData.messageTemplate,
+        });
+
+        // Clear existing recipients before adding new ones
+        await api.clearCampaignRecipients(editId);
+      } else {
+        const newCampaign = await api.createCampaign({
+          name: formData.name,
+          message_text: formData.messageTemplate,
+          scheduledTime: formData.scheduledTime ? new Date(formData.scheduledTime).toISOString() : undefined,
+          status: 'draft'
+        });
+        campaignId = newCampaign.id;
+      }
 
       // 3. Add recipients
-      await api.addCampaignRecipients(newCampaign.id, allRecipients);
+      if (campaignId) {
+        await api.addCampaignRecipients(campaignId, allRecipients);
+      }
 
       toast({
         title: "Success",
-        description: "Campaign created successfully",
+        description: editId ? "Campaign updated successfully" : "Campaign created successfully",
       });
 
       // Navigate back to campaigns list
@@ -175,8 +243,8 @@ export default function NewCampaignPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">New Campaign</h1>
-          <p className="text-muted-foreground">Create a new messaging campaign</p>
+          <h1 className="text-3xl font-bold tracking-tight">{editId ? 'Edit Campaign' : 'New Campaign'}</h1>
+          <p className="text-muted-foreground">{editId ? 'Edit existing campaign' : 'Create a new messaging campaign'}</p>
         </div>
       </div>
 
@@ -202,7 +270,7 @@ export default function NewCampaignPage() {
                 <Label htmlFor="message">Message Template</Label>
                 <Textarea
                   id="message"
-                  placeholder="Hi {name}, check out our latest offers!"
+                  placeholder="Hi {{name}}, check out our latest offers! [NO SPACES BETWEEN BRACES]"
                   className="min-h-[150px]"
                   value={formData.messageTemplate}
                   onChange={(e) => setFormData({ ...formData, messageTemplate: e.target.value })}
@@ -274,7 +342,7 @@ export default function NewCampaignPage() {
                       >
                         <span>{user.name}</span>
                         <span className="text-muted-foreground text-xs">
-                          {user.phoneNumber}
+                          {user.phone}
                         </span>
                       </Label>
                     </div>
@@ -360,7 +428,7 @@ export default function NewCampaignPage() {
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Create Campaign
+                {editId ? 'Update Campaign' : 'Create Campaign'}
               </>
             )}
           </Button>

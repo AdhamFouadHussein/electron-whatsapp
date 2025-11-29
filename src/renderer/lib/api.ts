@@ -34,9 +34,11 @@ export const api = {
     // Campaign management
     getCampaigns: (): Promise<any[]> => window.api.campaign.getAll(),
     createCampaign: (campaign: any): Promise<any> => window.api.campaign.create(campaign),
+    updateCampaign: (id: number, campaign: any): Promise<any> => window.api.campaign.update({ id, campaign }),
     getCampaign: (id: number): Promise<any> => window.api.campaign.get(id),
     parseCSV: (csvContent: string): Promise<{ recipients: any[], warnings: string[] }> => window.api.campaign.parseCSV(csvContent),
     addCampaignRecipients: (campaignId: number, recipients: any[]): Promise<any> => window.api.campaign.addRecipients({ campaignId, recipients }),
+    clearCampaignRecipients: (campaignId: number): Promise<any> => window.api.campaign.clearRecipients(campaignId),
     getCampaignRecipients: (campaignId: number): Promise<any[]> => window.api.campaign.getRecipients(campaignId),
     startCampaign: (campaignId: number): Promise<any> => window.api.campaign.start(campaignId),
     pauseCampaign: (campaignId: number): Promise<any> => window.api.campaign.pause(campaignId),

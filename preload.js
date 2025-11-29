@@ -102,10 +102,12 @@ contextBridge.exposeInMainWorld('api', {
   // Campaign operations
   campaign: {
     create: (campaign) => ipcRenderer.invoke('campaign:create', campaign),
+    update: (data) => ipcRenderer.invoke('campaign:update', data),
     getAll: () => ipcRenderer.invoke('campaign:getAll'),
     get: (id) => ipcRenderer.invoke('campaign:get', id),
     parseCSV: (csvContent) => ipcRenderer.invoke('campaign:parseCSV', csvContent),
     addRecipients: (data) => ipcRenderer.invoke('campaign:addRecipients', data),
+    clearRecipients: (campaignId) => ipcRenderer.invoke('campaign:clearRecipients', campaignId),
     getRecipients: (campaignId) => ipcRenderer.invoke('campaign:getRecipients', campaignId),
     start: (campaignId) => ipcRenderer.invoke('campaign:start', campaignId),
     pause: (campaignId) => ipcRenderer.invoke('campaign:pause', campaignId),

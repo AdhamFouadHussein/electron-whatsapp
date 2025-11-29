@@ -21,34 +21,34 @@ function parseCSV(csvContent) {
         if (results.errors.length > 0) {
           return reject(new Error(`CSV parsing errors: ${results.errors.map(e => e.message).join(', ')}`));
         }
-        
+
         const recipients = [];
         const errors = [];
-        
+
         results.data.forEach((row, index) => {
           const phone = row.phone || row.number || row.phonenumber;
           if (!phone) {
             errors.push(`Row ${index + 1}: Missing phone number`);
             return;
           }
-          
+
           // Clean phone number (remove spaces, dashes, etc.)
           const cleanPhone = phone.toString().replace(/[\s\-()]/g, '');
-          
+
           recipients.push({
             phone: cleanPhone,
             name: row.name || null
           });
         });
-        
+
         if (errors.length > 0) {
           console.warn('CSV parsing warnings:', errors);
         }
-        
+
         if (recipients.length === 0) {
           return reject(new Error('No valid recipients found in CSV. Ensure there is a "phone" column.'));
         }
-        
+
         resolve({ recipients, warnings: errors });
       },
       error: (error) => {
@@ -65,34 +65,34 @@ async function startCampaign(campaignId) {
   if (isRunning) {
     throw new Error('Another campaign is already running');
   }
-  
+
   const campaign = await dbOps.getCampaign(campaignId);
   if (!campaign) {
     throw new Error('Campaign not found');
   }
-  
+
   if (campaign.status === 'completed') {
     throw new Error('Campaign is already completed');
   }
-  
+
   // Get pending recipients
   const recipients = await dbOps.getCampaignRecipients(campaignId, 'pending');
   if (recipients.length === 0) {
     await dbOps.updateCampaignStatus(campaignId, 'completed');
     throw new Error('No pending recipients to send messages to');
   }
-  
+
   console.log(`Starting campaign ${campaignId}: ${recipients.length} pending recipients`);
-  
+
   activeCampaign = campaign;
   isRunning = true;
   isPaused = false;
-  
+
   await dbOps.updateCampaignStatus(campaignId, 'running');
-  
+
   // Process recipients sequentially with delays
   await processRecipients(campaign, recipients);
-  
+
   console.log(`Campaign ${campaignId} completed`);
 }
 
@@ -108,42 +108,54 @@ async function processRecipients(campaign, recipients) {
       isRunning = false;
       return;
     }
-    
+
     if (!isRunning) {
       console.log(`Campaign ${campaign.id} stopped at recipient ${i + 1}/${recipients.length}`);
       return;
     }
-    
+
     const recipient = recipients[i];
-    
+
     try {
       console.log(`Sending message to ${recipient.phone} (${i + 1}/${recipients.length})...`);
-      
-      // Replace {{name}} placeholder if name exists
+
+      // Replace variables
       let message = campaign.message_text;
+
+      // Replace {{name}}
       if (recipient.name) {
         message = message.replace(/\{\{name\}\}/gi, recipient.name);
+      } else {
+        // If name is missing, replace with empty string or a default fallback if you prefer
+        // For now, we'll just remove the variable to avoid sending "{{name}}"
+        message = message.replace(/\{\{name\}\}/gi, '');
       }
-      
+
+      // Replace {{phoneNumber}} or {{phone}}
+      if (recipient.phone) {
+        message = message.replace(/\{\{phoneNumber\}\}/gi, recipient.phone);
+        message = message.replace(/\{\{phone\}\}/gi, recipient.phone);
+      }
+
       // Send message via WhatsApp
       await whatsappService.sendMessage(recipient.phone, message);
-      
+
       // Update recipient status
       await dbOps.updateRecipientStatus(recipient.id, 'sent');
       await dbOps.incrementCampaignCounters(campaign.id, 1, 0);
-      
+
       console.log(`✓ Message sent to ${recipient.phone}`);
-      
+
     } catch (error) {
       console.error(`✗ Failed to send message to ${recipient.phone}:`, error.message);
-      
+
       // Update recipient status with error
       await dbOps.updateRecipientStatus(recipient.id, 'failed', {
         error_message: error.message
       });
       await dbOps.incrementCampaignCounters(campaign.id, 0, 1);
     }
-    
+
     // Add human-like delay before next message (except for last recipient)
     if (i < recipients.length - 1) {
       const delay = getRandomDelay(campaign.min_delay_sec, campaign.max_delay_sec);
@@ -151,7 +163,7 @@ async function processRecipients(campaign, recipients) {
       await sleep(delay * 1000);
     }
   }
-  
+
   // Mark campaign as completed
   await dbOps.updateCampaignStatus(campaign.id, 'completed');
   isRunning = false;
@@ -179,10 +191,10 @@ async function pauseCampaign(campaignId) {
   if (!isRunning || !activeCampaign || activeCampaign.id !== campaignId) {
     throw new Error('Campaign is not running');
   }
-  
+
   console.log(`Pausing campaign ${campaignId}...`);
   isPaused = true;
-  
+
   return { success: true };
 }
 
@@ -194,16 +206,16 @@ async function resumeCampaign(campaignId) {
   if (!campaign) {
     throw new Error('Campaign not found');
   }
-  
+
   if (campaign.status !== 'paused') {
     throw new Error('Campaign is not paused');
   }
-  
+
   console.log(`Resuming campaign ${campaignId}...`);
-  
+
   // Restart the campaign (it will only process pending recipients)
   await startCampaign(campaignId);
-  
+
   return { success: true };
 }
 
