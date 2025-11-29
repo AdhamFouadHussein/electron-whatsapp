@@ -14,6 +14,7 @@ declare global {
                 // Users
                 getUsers: () => Promise<any[]>;
                 createUser: (userData: any) => Promise<any>;
+                createUsers: (users: any[]) => Promise<any>;
                 updateUser: (id: number, userData: any) => Promise<any>;
                 deleteUser: (id: number) => Promise<void>;
 
@@ -22,6 +23,11 @@ declare global {
                 createEvent: (eventData: any) => Promise<any>;
                 updateEvent: (id: number, eventData: any) => Promise<any>;
                 deleteEvent: (id: number) => Promise<void>;
+
+                // Event Types
+                getEventTypes: () => Promise<any[]>;
+                createEventType: (eventType: any) => Promise<any>;
+                deleteEventType: (id: number) => Promise<void>;
 
                 // Reminders
                 getReminders: (status?: string) => Promise<any[]>;

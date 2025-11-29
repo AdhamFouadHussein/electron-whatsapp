@@ -451,6 +451,7 @@ async function getTodaysMessageStatus() {
   }));
 }
 
+// ...existing code...
 async function getUpcomingEventsList(limit = 4) {
   const [rows] = await getPool().query(`
         SELECT e.id, u.name as user, e.title as event, e.event_date as date, 'pending' as status
@@ -463,73 +464,9 @@ async function getUpcomingEventsList(limit = 4) {
   return rows;
 }
 
-module.exports = {
-  // Dashboard
-  getDashboardStats,
-  getMessagesChartData,
-  getTodaysMessageStatus,
-  getUpcomingEventsList,
-
-  // Users
-  getUsers,
-  getUser,
-  createUser,
-  createUsers,
-  updateUser,
-  deleteUser,
-
-  // Events
-  getEvents,
-  createEvent,
-  updateEvent,
-  deleteEvent,
-
-  // Reminders
-  getReminders,
-  getPendingReminders,
-  createReminder,
-  updateReminder,
-  updateReminderStatus,
-  deleteReminder,
-
-  // Message templates
-  getMessageTemplates,
-  getMessageTemplate,
-  saveMessageTemplate,
-  deleteMessageTemplate,
-
-  // Files
-  uploadFile,
-  getFile,
-  getUserFiles,
-  getAllFiles,
-  deleteFile,
-
-  // Message logs
-  createMessageLog,
-  getMessageLogs,
-
-  // Birthdays
-  getUpcomingBirthdays,
-
-  // Settings
-  getSetting,
-  setSetting,
-
-  // Campaigns
-  createCampaign,
-  getCampaigns,
-  getCampaign,
-  updateCampaignStatus,
-  addCampaignRecipients,
-  getCampaignRecipients,
-  updateRecipientStatus,
-  incrementCampaignCounters,
-  deleteCampaign
-};
-
 // Campaign operations
 async function createCampaign(campaign) {
+  // ...existing code...
   const [result] = await getPool().query(
     'INSERT INTO campaigns (name, message_text, min_delay_sec, max_delay_sec, total_recipients) VALUES (?, ?, ?, ?, ?)',
     [campaign.name, campaign.message_text, campaign.min_delay_sec || 5, campaign.max_delay_sec || 15, campaign.total_recipients || 0]
@@ -682,3 +619,104 @@ async function deleteCampaign(id) {
   await getPool().query('DELETE FROM campaigns WHERE id = ?', [id]);
   return { success: true };
 }
+
+// Event Type operations
+async function getEventTypes() {
+  const [rows] = await getPool().query('SELECT * FROM event_types ORDER BY name');
+  return rows;
+}
+
+async function createEventType(eventType) {
+  const [result] = await getPool().query(
+    'INSERT INTO event_types (name, color, icon) VALUES (?, ?, ?)',
+    [eventType.name, eventType.color, eventType.icon]
+  );
+  return { id: result.insertId, ...eventType };
+}
+
+async function deleteEventType(id) {
+  // Check if used in events
+  const [events] = await getPool().query('SELECT COUNT(*) as count FROM events WHERE event_type = (SELECT name FROM event_types WHERE id = ?)', [id]);
+  if (events[0].count > 0) {
+    throw new Error('Cannot delete event type that is in use by events');
+  }
+
+  // Check if used in templates
+  const [templates] = await getPool().query('SELECT COUNT(*) as count FROM message_templates WHERE event_type = (SELECT name FROM event_types WHERE id = ?)', [id]);
+  if (templates[0].count > 0) {
+    throw new Error('Cannot delete event type that is in use by templates');
+  }
+
+  await getPool().query('DELETE FROM event_types WHERE id = ?', [id]);
+  return { success: true };
+}
+
+module.exports = {
+  // Dashboard
+  getDashboardStats,
+  getMessagesChartData,
+  getTodaysMessageStatus,
+  getUpcomingEventsList,
+
+  // Users
+  getUsers,
+  getUser,
+  createUser,
+  createUsers,
+  updateUser,
+  deleteUser,
+
+  // Events
+  getEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+
+  // Reminders
+  getReminders,
+  getPendingReminders,
+  createReminder,
+  updateReminder,
+  updateReminderStatus,
+  deleteReminder,
+
+  // Message templates
+  getMessageTemplates,
+  getMessageTemplate,
+  saveMessageTemplate,
+  deleteMessageTemplate,
+
+  // Files
+  uploadFile,
+  getFile,
+  getUserFiles,
+  getAllFiles,
+  deleteFile,
+
+  // Message logs
+  createMessageLog,
+  getMessageLogs,
+
+  // Birthdays
+  getUpcomingBirthdays,
+
+  // Settings
+  getSetting,
+  setSetting,
+
+  // Campaigns
+  createCampaign,
+  getCampaigns,
+  getCampaign,
+  updateCampaignStatus,
+  addCampaignRecipients,
+  getCampaignRecipients,
+  updateRecipientStatus,
+  incrementCampaignCounters,
+  deleteCampaign,
+
+  // Event Types
+  getEventTypes,
+  createEventType,
+  deleteEventType
+};

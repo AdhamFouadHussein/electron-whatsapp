@@ -24,51 +24,67 @@ interface NewTemplatePageProps {
   duplicateId?: number
 }
 
+interface EventType {
+  id: number
+  name: string
+  color: string
+  icon: string
+}
+
 export default function NewTemplatePage({ editId, duplicateId }: NewTemplatePageProps) {
   const { setCurrentPage } = useNavigation()
   const [formData, setFormData] = useState({
     id: undefined as number | undefined,
     name: "",
-    event_type: "birthday",
+    event_type: "",
     language: "en",
     template_text: "",
     variables: [] as string[],
     is_default: false,
   })
 
+  const [eventTypes, setEventTypes] = useState<EventType[]>([])
   const [newVariable, setNewVariable] = useState("")
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(!!(editId || duplicateId))
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const loadTemplate = async () => {
-      const idToLoad = editId || duplicateId
-      if (!idToLoad) return
-
+    const loadData = async () => {
       try {
         setIsLoading(true)
-        const template = await api.getMessageTemplate(idToLoad)
-        if (template) {
-          setFormData({
-            id: editId ? template.id : undefined, // Only set ID if editing
-            name: duplicateId ? `${template.name} (Copy)` : template.name,
-            event_type: template.event_type,
-            language: template.language,
-            template_text: template.template_text,
-            variables: template.variables || [],
-            is_default: duplicateId ? false : template.is_default, // Reset default for duplicates
-          })
+        const types = await api.getEventTypes()
+        setEventTypes(types)
+
+        // Set default event type if not editing/duplicating
+        if (!editId && !duplicateId && types.length > 0) {
+          setFormData(prev => ({ ...prev, event_type: types[0].name }))
+        }
+
+        const idToLoad = editId || duplicateId
+        if (idToLoad) {
+          const template = await api.getMessageTemplate(idToLoad)
+          if (template) {
+            setFormData({
+              id: editId ? template.id : undefined,
+              name: duplicateId ? `${template.name} (Copy)` : template.name,
+              event_type: template.event_type,
+              language: template.language,
+              template_text: template.template_text,
+              variables: template.variables || [],
+              is_default: duplicateId ? false : template.is_default,
+            })
+          }
         }
       } catch (error) {
-        console.error("Failed to load template:", error)
-        toast.error("Failed to load template details")
+        console.error("Failed to load data:", error)
+        toast.error("Failed to load data")
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadTemplate()
+    loadData()
   }, [editId, duplicateId])
 
   const validateForm = (): boolean => {
@@ -80,6 +96,10 @@ export default function NewTemplatePage({ editId, duplicateId }: NewTemplatePage
 
     if (!formData.template_text.trim()) {
       newErrors.template_text = "Template text is required"
+    }
+
+    if (!formData.event_type) {
+      newErrors.event_type = "Event type is required"
     }
 
     setErrors(newErrors)
@@ -190,17 +210,23 @@ export default function NewTemplatePage({ editId, duplicateId }: NewTemplatePage
               <div className="space-y-2">
                 <Label htmlFor="event_type">Event Type</Label>
                 <Select value={formData.event_type} onValueChange={(value) => handleSelectChange("event_type", value)}>
-                  <SelectTrigger className="border-border/50">
-                    <SelectValue />
+                  <SelectTrigger className={`border-border/50 ${errors.event_type ? "border-red-500" : ""}`}>
+                    <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="birthday">Birthday</SelectItem>
-                    <SelectItem value="meeting">Meeting</SelectItem>
-                    <SelectItem value="flight">Flight</SelectItem>
-                    <SelectItem value="embassy">Embassy</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
+                    {eventTypes.map(type => (
+                      <SelectItem key={type.id} value={type.name}>
+                        <span className="capitalize">{type.name}</span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                {errors.event_type && (
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.event_type}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="language">Language</Label>

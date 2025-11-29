@@ -11,40 +11,36 @@ import { api } from "../../lib/api"
 import { useNavigation } from "../../context/NavigationContext"
 import { toast } from "sonner"
 
-const eventTypeColors: Record<string, string> = {
-  birthday: "from-pink-500 to-rose-500",
-  meeting: "from-blue-500 to-cyan-500",
-  flight: "from-orange-500 to-red-500",
-  embassy: "from-purple-500 to-indigo-500",
-  custom: "from-gray-500 to-slate-500",
-}
-
-const eventTypeLabels: Record<string, string> = {
-  birthday: "Birthday",
-  meeting: "Meeting",
-  flight: "Flight",
-  embassy: "Embassy",
-  custom: "Custom",
+interface EventType {
+  id: number
+  name: string
+  color: string
+  icon: string
 }
 
 export default function TemplatesPage() {
   const { setCurrentPage } = useNavigation()
   const [searchTerm, setSearchTerm] = useState("")
   const [templates, setTemplates] = useState<any[]>([])
+  const [eventTypes, setEventTypes] = useState<EventType[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    loadTemplates()
+    loadData()
   }, [])
 
-  const loadTemplates = async () => {
+  const loadData = async () => {
     try {
       setIsLoading(true)
-      const data = await api.getMessageTemplates()
-      setTemplates(data)
+      const [templatesData, typesData] = await Promise.all([
+        api.getMessageTemplates(),
+        api.getEventTypes()
+      ])
+      setTemplates(templatesData)
+      setEventTypes(typesData)
     } catch (error) {
-      console.error("Failed to load templates:", error)
-      toast.error("Failed to load templates")
+      console.error("Failed to load data:", error)
+      toast.error("Failed to load data")
     } finally {
       setIsLoading(false)
     }
@@ -55,7 +51,7 @@ export default function TemplatesPage() {
       try {
         await api.deleteMessageTemplate(id)
         toast.success("Template deleted successfully")
-        loadTemplates()
+        loadData()
       } catch (error) {
         console.error("Failed to delete template:", error)
         toast.error("Failed to delete template")
@@ -68,6 +64,11 @@ export default function TemplatesPage() {
       template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.event_type.toLowerCase().includes(searchTerm.toLowerCase()),
   )
+
+  const getTypeColor = (typeName: string) => {
+    const type = eventTypes.find(t => t.name === typeName)
+    return type?.color || "from-gray-500 to-slate-500"
+  }
 
   return (
     <div className="space-y-8">
@@ -118,16 +119,16 @@ export default function TemplatesPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`rounded-lg bg-gradient-to-br ${eventTypeColors[template.event_type] || eventTypeColors.custom} p-2`}
+                      className={`rounded-lg bg-gradient-to-br ${getTypeColor(template.event_type)} p-2`}
                     >
-                      <span className="text-white font-bold text-sm">
-                        {(eventTypeLabels[template.event_type] || template.event_type).substring(0, 1).toUpperCase()}
+                      <span className="text-white font-bold text-sm capitalize">
+                        {template.event_type.substring(0, 1)}
                       </span>
                     </div>
                     <div>
                       <h3 className="font-semibold">{template.name}</h3>
-                      <p className="text-xs text-muted-foreground">
-                        {eventTypeLabels[template.event_type] || template.event_type} •{" "}
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {template.event_type} •{" "}
                         {template.language.toUpperCase()}
                       </p>
                     </div>

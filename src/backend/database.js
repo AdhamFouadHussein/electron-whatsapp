@@ -8,7 +8,7 @@ function createPool() {
   if (pool) {
     pool.end(); // Close existing pool
   }
-  
+
   pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3306,
@@ -21,14 +21,14 @@ function createPool() {
     enableKeepAlive: true,
     keepAliveInitialDelay: 0
   });
-  
+
   console.log('Database pool created/recreated with config:', {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 3306,
     user: process.env.DB_USER || 'root',
     database: process.env.DB_NAME || 'whatsapp_reminder_app'
   });
-  
+
   return pool;
 }
 
@@ -57,6 +57,34 @@ async function testConnection() {
 async function initializeDatabase() {
   try {
     await getPool().query(`
+      CREATE TABLE IF NOT EXISTS event_types (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(50) UNIQUE NOT NULL,
+        color VARCHAR(50) DEFAULT 'from-gray-500 to-slate-500',
+        icon VARCHAR(50) DEFAULT 'Calendar',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // Migrate event_type columns from ENUM to VARCHAR if needed
+    try {
+      await getPool().query(`
+        ALTER TABLE events MODIFY COLUMN event_type VARCHAR(50) NOT NULL;
+      `);
+    } catch (e) {
+      // Ignore if already varchar or other error, we'll assume it works or was already done
+      console.log('Note: events.event_type modification skipped or failed (might be already VARCHAR)');
+    }
+
+    try {
+      await getPool().query(`
+        ALTER TABLE message_templates MODIFY COLUMN event_type VARCHAR(50) NOT NULL;
+      `);
+    } catch (e) {
+      console.log('Note: message_templates.event_type modification skipped or failed');
+    }
+
+    await getPool().query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -76,7 +104,7 @@ async function initializeDatabase() {
       CREATE TABLE IF NOT EXISTS events (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
-        event_type ENUM('meeting', 'embassy', 'flight', 'birthday', 'custom') NOT NULL,
+        event_type VARCHAR(50) NOT NULL,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         event_date DATETIME NOT NULL,
@@ -115,7 +143,7 @@ async function initializeDatabase() {
       CREATE TABLE IF NOT EXISTS message_templates (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
-        event_type ENUM('meeting', 'embassy', 'flight', 'birthday', 'custom') NOT NULL,
+        event_type VARCHAR(50) NOT NULL,
         language VARCHAR(10) NOT NULL,
         template_text TEXT NOT NULL,
         variables JSON,
@@ -213,14 +241,34 @@ async function initializeDatabase() {
     `);
 
     console.log('✓ Database schema initialized successfully');
-    
+
+    // Insert default event types
+    await insertDefaultEventTypes();
+
     // Insert default message templates
     await insertDefaultTemplates();
-    
+
     return true;
   } catch (error) {
     console.error('✗ Database initialization failed:', error);
     throw error;
+  }
+}
+
+async function insertDefaultEventTypes() {
+  const types = [
+    { name: 'birthday', color: 'from-pink-500 to-rose-500', icon: 'Cake' },
+    { name: 'meeting', color: 'from-blue-500 to-cyan-500', icon: 'Briefcase' },
+    { name: 'flight', color: 'from-orange-500 to-red-500', icon: 'Plane' },
+    { name: 'embassy', color: 'from-purple-500 to-indigo-500', icon: 'Building2' },
+    { name: 'custom', color: 'from-gray-500 to-slate-500', icon: 'Calendar' }
+  ];
+
+  for (const type of types) {
+    await getPool().query(
+      `INSERT IGNORE INTO event_types (name, color, icon) VALUES (?, ?, ?)`,
+      [type.name, type.color, type.icon]
+    );
   }
 }
 

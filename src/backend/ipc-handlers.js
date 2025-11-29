@@ -545,5 +545,19 @@ ipcMain.handle('campaign:delete', async (event, id) => {
   return await dbOps.deleteCampaign(id);
 });
 
+// Event Type IPC handlers
+console.log('Registering Event Type handlers...');
+ipcMain.handle('db:getEventTypes', async () => {
+  return await dbOps.getEventTypes();
+});
+
+ipcMain.handle('db:createEventType', async (event, eventType) => {
+  return await dbOps.createEventType(eventType);
+});
+
+ipcMain.handle('db:deleteEventType', async (event, id) => {
+  return await dbOps.deleteEventType(id);
+});
+
 module.exports = { initializeBackend, loadDatabaseConfig };
 

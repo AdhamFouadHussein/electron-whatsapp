@@ -27,6 +27,10 @@ contextBridge.exposeInMainWorld('api', {
     updateReminder: (id, reminder) => ipcRenderer.invoke('db:updateReminder', id, reminder),
     deleteReminder: (id) => ipcRenderer.invoke('db:deleteReminder', id),
 
+    getEventTypes: () => ipcRenderer.invoke('db:getEventTypes'),
+    createEventType: (eventType) => ipcRenderer.invoke('db:createEventType', eventType),
+    deleteEventType: (id) => ipcRenderer.invoke('db:deleteEventType', id),
+
     getMessageTemplates: (language) => ipcRenderer.invoke('db:getMessageTemplates', language),
     getMessageTemplate: (id) => ipcRenderer.invoke('db:getMessageTemplate', id),
     saveMessageTemplate: (template) => ipcRenderer.invoke('db:saveMessageTemplate', template),
