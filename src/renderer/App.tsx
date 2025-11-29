@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/sidebar';
 import { Header } from './components/header';
 import { ThemeProvider } from './components/theme-provider';
-import { Toaster } from './components/ui/sonner';
+import { Toaster as SonnerToaster } from './components/ui/sonner';
+import { Toaster as ShadcnToaster } from './components/ui/toaster';
 import { AuthStorage, AuthAPI, User } from './lib/auth-api';
 import { toast } from 'sonner';
 import { NavigationProvider, useNavigation } from './context/NavigationContext';
@@ -15,6 +16,8 @@ import RemindersPage from './app/reminders/page';
 import BirthdaysPage from './app/birthdays/page';
 import TemplatesPage from './app/templates/page';
 import CampaignsPage from './app/campaigns/page';
+import NewCampaignPage from './app/campaigns/new/page';
+import CampaignDetailsPage from './app/campaigns/details/page';
 import LogsPage from './app/logs/page';
 import WhatsAppPage from './app/whatsapp/page';
 import SettingsPage from './app/settings/page';
@@ -105,7 +108,14 @@ const AppContent: React.FC = () => {
     const renderPage = () => {
         if (!isAuthenticated || currentPage === 'login') {
             return <LoginPage onLoginSuccess={handleLoginSuccess} />;
-        } switch (currentPage) {
+        }
+
+        if (currentPage.startsWith('campaigns/details/')) {
+            const campaignId = parseInt(currentPage.split('/').pop() || '0');
+            return <CampaignDetailsPage campaignId={campaignId} />;
+        }
+
+        switch (currentPage) {
             case 'dashboard':
                 return <Dashboard />;
             case 'users':
@@ -120,6 +130,8 @@ const AppContent: React.FC = () => {
                 return <TemplatesPage />;
             case 'campaigns':
                 return <CampaignsPage />;
+            case 'campaigns/new':
+                return <NewCampaignPage />;
             case 'logs':
                 return <LogsPage />;
             case 'whatsapp':
@@ -165,7 +177,8 @@ const AppContent: React.FC = () => {
                     </div>
                 </div>
             )}
-            <Toaster />
+            <SonnerToaster />
+            <ShadcnToaster />
         </ThemeProvider>
     );
 };

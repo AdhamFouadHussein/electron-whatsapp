@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('api', {
     getUsers: () => ipcRenderer.invoke('db:getUsers'),
     getUser: (id) => ipcRenderer.invoke('db:getUser', id),
     createUser: (user) => ipcRenderer.invoke('db:createUser', user),
+    createUsers: (users) => ipcRenderer.invoke('db:createUsers', users),
     updateUser: (id, user) => ipcRenderer.invoke('db:updateUser', id, user),
     deleteUser: (id) => ipcRenderer.invoke('db:deleteUser', id),
 
@@ -100,7 +101,8 @@ contextBridge.exposeInMainWorld('api', {
     start: (campaignId) => ipcRenderer.invoke('campaign:start', campaignId),
     pause: (campaignId) => ipcRenderer.invoke('campaign:pause', campaignId),
     resume: (campaignId) => ipcRenderer.invoke('campaign:resume', campaignId),
-    getStatus: () => ipcRenderer.invoke('campaign:getStatus')
+    getStatus: () => ipcRenderer.invoke('campaign:getStatus'),
+    delete: (campaignId) => ipcRenderer.invoke('campaign:delete', campaignId)
   },
 
   // Notify main process of license activation

@@ -4,7 +4,7 @@
   "description": "Professional Multi-Device WhatsApp Automation Platform | Event Management & Intelligent Reminder System with Multi-Language Support, Dark Mode UI, and Enterprise-Grade MySQL Synchronization",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "npm run build && electron .",
     "dev": "concurrently \"npm run watch\" \"electron .\"",
     "watch": "webpack --watch --mode development",
     "build": "webpack --mode production",

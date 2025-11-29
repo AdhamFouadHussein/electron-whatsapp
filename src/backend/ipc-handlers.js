@@ -90,6 +90,10 @@ ipcMain.handle('db:createUser', async (event, user) => {
   return await dbOps.createUser(user);
 });
 
+ipcMain.handle('db:createUsers', async (event, users) => {
+  return await dbOps.createUsers(users);
+});
+
 ipcMain.handle('db:updateUser', async (event, id, user) => {
   return await dbOps.updateUser(id, user);
 });
@@ -527,6 +531,10 @@ ipcMain.handle('campaign:resume', async (event, campaignId) => {
 
 ipcMain.handle('campaign:getStatus', async () => {
   return campaignService.getActiveCampaignStatus();
+});
+
+ipcMain.handle('campaign:delete', async (event, id) => {
+  return await dbOps.deleteCampaign(id);
 });
 
 module.exports = { initializeBackend, loadDatabaseConfig };

@@ -19,6 +19,25 @@ async function createUser(user) {
   return { id: result.insertId, ...user };
 }
 
+async function createUsers(users) {
+  if (users.length === 0) return { success: true, count: 0 };
+
+  const values = users.map(u => [
+    u.name,
+    u.phone,
+    u.email || null,
+    u.date_of_birth || null,
+    u.preferred_language || 'en',
+    u.notes || null
+  ]);
+
+  const [result] = await getPool().query(
+    'INSERT IGNORE INTO users (name, phone, email, date_of_birth, preferred_language, notes) VALUES ?',
+    [values]
+  );
+  return { success: true, count: result.affectedRows };
+}
+
 async function updateUser(id, user) {
   await getPool().query(
     'UPDATE users SET name = ?, phone = ?, email = ?, date_of_birth = ?, preferred_language = ?, notes = ? WHERE id = ?',
@@ -437,6 +456,7 @@ module.exports = {
   getUsers,
   getUser,
   createUser,
+  createUsers,
   updateUser,
   deleteUser,
 
@@ -485,7 +505,8 @@ module.exports = {
   addCampaignRecipients,
   getCampaignRecipients,
   updateRecipientStatus,
-  incrementCampaignCounters
+  incrementCampaignCounters,
+  deleteCampaign
 };
 
 // Campaign operations
@@ -635,5 +656,10 @@ async function incrementCampaignCounters(campaignId, sentIncrement = 0, failedIn
     'UPDATE campaigns SET sent_count = sent_count + ?, failed_count = failed_count + ? WHERE id = ?',
     [sentIncrement, failedIncrement, campaignId]
   );
+  return { success: true };
+}
+
+async function deleteCampaign(id) {
+  await getPool().query('DELETE FROM campaigns WHERE id = ?', [id]);
   return { success: true };
 }

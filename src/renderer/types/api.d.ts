@@ -43,10 +43,20 @@ declare global {
 
                 // Message Logs
                 getMessageLogs: () => Promise<any[]>;
+            };
 
-                // Campaigns
-                createCampaign: (campaignData: any) => Promise<any>;
-                getCampaigns: () => Promise<any[]>;
+            campaign: {
+                create: (campaign: any) => Promise<any>;
+                getAll: () => Promise<any[]>;
+                get: (id: number) => Promise<any>;
+                parseCSV: (csvContent: string) => Promise<any[]>;
+                addRecipients: (data: { campaignId: number; recipients: any[] }) => Promise<any>;
+                getRecipients: (campaignId: number) => Promise<any[]>;
+                start: (campaignId: number) => Promise<any>;
+                pause: (campaignId: number) => Promise<any>;
+                resume: (campaignId: number) => Promise<any>;
+                getStatus: () => Promise<any>;
+                delete: (campaignId: number) => Promise<any>;
             };
 
             whatsapp: {
