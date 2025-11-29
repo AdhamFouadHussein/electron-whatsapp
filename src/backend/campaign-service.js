@@ -100,34 +100,44 @@ async function startCampaign(campaignId) {
  * Process recipients with human-like delays
  */
 async function processRecipients(campaign, recipients) {
+  const logBuffer = [];
+  const BATCH_SIZE = 10;
+
   for (let i = 0; i < recipients.length; i++) {
     // Check if paused or stopped
     if (isPaused) {
       console.log(`Campaign ${campaign.id} paused at recipient ${i + 1}/${recipients.length}`);
       await dbOps.updateCampaignStatus(campaign.id, 'paused');
       isRunning = false;
+      // Flush remaining logs before pausing
+      if (logBuffer.length > 0) {
+        await dbOps.createMessageLogsBatch(logBuffer);
+      }
       return;
     }
 
     if (!isRunning) {
       console.log(`Campaign ${campaign.id} stopped at recipient ${i + 1}/${recipients.length}`);
+      // Flush remaining logs before stopping
+      if (logBuffer.length > 0) {
+        await dbOps.createMessageLogsBatch(logBuffer);
+      }
       return;
     }
 
     const recipient = recipients[i];
+    let message = campaign.message_text;
+    let status = 'sent';
+    let errorMessage = null;
 
     try {
       console.log(`Sending message to ${recipient.phone} (${i + 1}/${recipients.length})...`);
 
       // Replace variables
-      let message = campaign.message_text;
-
       // Replace {{name}}
       if (recipient.name) {
         message = message.replace(/\{\{name\}\}/gi, recipient.name);
       } else {
-        // If name is missing, replace with empty string or a default fallback if you prefer
-        // For now, we'll just remove the variable to avoid sending "{{name}}"
         message = message.replace(/\{\{name\}\}/gi, '');
       }
 
@@ -148,6 +158,8 @@ async function processRecipients(campaign, recipients) {
 
     } catch (error) {
       console.error(`✗ Failed to send message to ${recipient.phone}:`, error.message);
+      status = 'failed';
+      errorMessage = error.message;
 
       // Update recipient status with error
       await dbOps.updateRecipientStatus(recipient.id, 'failed', {
@@ -156,12 +168,36 @@ async function processRecipients(campaign, recipients) {
       await dbOps.incrementCampaignCounters(campaign.id, 0, 1);
     }
 
+    // Add to log buffer
+    logBuffer.push({
+      user_id: null, // Campaign recipients might not be in users table
+      reminder_id: null,
+      message_type: 'campaign',
+      message_text: message,
+      language: 'en',
+      file_id: null,
+      phone: recipient.phone,
+      status: status,
+      error_message: errorMessage
+    });
+
+    // Flush buffer if full
+    if (logBuffer.length >= BATCH_SIZE) {
+      await dbOps.createMessageLogsBatch(logBuffer);
+      logBuffer.length = 0;
+    }
+
     // Add human-like delay before next message (except for last recipient)
     if (i < recipients.length - 1) {
       const delay = getRandomDelay(campaign.min_delay_sec, campaign.max_delay_sec);
       console.log(`Waiting ${delay}s before next message...`);
       await sleep(delay * 1000);
     }
+  }
+
+  // Flush remaining logs
+  if (logBuffer.length > 0) {
+    await dbOps.createMessageLogsBatch(logBuffer);
   }
 
   // Mark campaign as completed

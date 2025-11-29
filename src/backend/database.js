@@ -197,6 +197,24 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    // Migration: Allow NULL user_id in message_logs
+    try {
+      await getPool().query(`
+        ALTER TABLE message_logs MODIFY COLUMN user_id INT NULL;
+      `);
+    } catch (e) {
+      console.log('Note: message_logs.user_id modification skipped or failed (might be already nullable)');
+    }
+
+    // Migration: Add 'campaign' to message_type ENUM in message_logs
+    try {
+      await getPool().query(`
+        ALTER TABLE message_logs MODIFY COLUMN message_type ENUM('reminder', 'birthday', 'manual', 'campaign') NOT NULL;
+      `);
+    } catch (e) {
+      console.log('Note: message_logs.message_type modification skipped or failed (might already have campaign)');
+    }
+
     await getPool().query(`
       CREATE TABLE IF NOT EXISTS app_settings (
         id INT AUTO_INCREMENT PRIMARY KEY,

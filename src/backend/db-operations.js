@@ -357,6 +357,28 @@ async function createMessageLog(log) {
   return { id: result.insertId, ...log };
 }
 
+async function createMessageLogsBatch(logs) {
+  if (logs.length === 0) return { success: true, count: 0 };
+
+  const values = logs.map(log => [
+    log.user_id || null,
+    log.reminder_id || null,
+    log.message_type || 'campaign',
+    log.message_text,
+    log.language || 'en',
+    log.file_id || null,
+    log.phone,
+    log.status,
+    log.error_message || null
+  ]);
+
+  const [result] = await getPool().query(
+    'INSERT INTO message_logs (user_id, reminder_id, message_type, message_text, language, file_id, phone, status, error_message) VALUES ?',
+    [values]
+  );
+  return { success: true, count: result.affectedRows };
+}
+
 async function getMessageLogs(userId = null, limit = 100) {
   if (userId) {
     const [rows] = await getPool().query(
@@ -779,6 +801,7 @@ module.exports = {
 
   // Message logs
   createMessageLog,
+  createMessageLogsBatch,
   getMessageLogs,
 
   // Birthdays
