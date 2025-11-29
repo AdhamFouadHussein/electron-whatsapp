@@ -13,6 +13,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend,
 } from "recharts"
 import { Users, Calendar, Bell, MessageSquare, LucideProps } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -108,23 +109,23 @@ export default function Dashboard() {
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
-              <YAxis stroke="hsl(var(--muted-foreground))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="day" stroke="var(--muted-foreground)" />
+              <YAxis stroke="var(--muted-foreground)" />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: `1px solid hsl(var(--border))`,
+                  backgroundColor: "var(--card)",
+                  border: `1px solid var(--border)`,
                   borderRadius: "8px",
-                  color: "hsl(var(--foreground))",
+                  color: "var(--foreground)",
                 }}
               />
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="hsl(var(--primary))"
+                stroke="var(--primary)"
                 strokeWidth={3}
-                dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                dot={{ fill: "var(--primary)", r: 4 }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -136,29 +137,34 @@ export default function Dashboard() {
             <h3 className="text-lg font-semibold">Message Status</h3>
             <p className="text-sm text-muted-foreground">Today's overview</p>
           </div>
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
                 data={pieData}
                 cx="50%"
                 cy="50%"
-                labelLine={false}
-                label={({ name, value }) => `${name} ${value}%`}
+                innerRadius={60}
                 outerRadius={80}
-                fill="#8884d8"
+                paddingAngle={5}
                 dataKey="value"
               >
                 {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
                 ))}
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: `1px solid hsl(var(--border))`,
+                  backgroundColor: "var(--card)",
+                  border: `1px solid var(--border)`,
                   borderRadius: "8px",
-                  color: "hsl(var(--foreground))",
+                  color: "var(--foreground)",
                 }}
+                itemStyle={{ color: "var(--foreground)" }}
+              />
+              <Legend
+                verticalAlign="bottom"
+                height={36}
+                formatter={(value) => <span className="text-foreground">{value}</span>}
               />
             </PieChart>
           </ResponsiveContainer>

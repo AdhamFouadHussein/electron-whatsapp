@@ -411,7 +411,14 @@ async function getDashboardStats() {
   const [[{ totalUsers }]] = await pool.query('SELECT COUNT(*) as totalUsers FROM users');
   const [[{ upcomingEvents }]] = await pool.query('SELECT COUNT(*) as upcomingEvents FROM events WHERE event_date > NOW()');
   const [[{ pendingReminders }]] = await pool.query('SELECT COUNT(*) as pendingReminders FROM reminders WHERE status = "pending"');
-  const [[{ messagesToday }]] = await pool.query('SELECT COUNT(*) as messagesToday FROM message_logs WHERE DATE(sent_at) = CURDATE()');
+
+  // Count regular messages
+  const [[{ regularMessages }]] = await pool.query('SELECT COUNT(*) as regularMessages FROM message_logs WHERE DATE(sent_at) = CURDATE()');
+
+  // Count campaign messages
+  const [[{ campaignMessages }]] = await pool.query('SELECT COUNT(*) as campaignMessages FROM campaign_recipients WHERE DATE(sent_at) = CURDATE()');
+
+  const messagesToday = regularMessages + campaignMessages;
 
   return { totalUsers, upcomingEvents, pendingReminders, messagesToday };
 }
@@ -419,8 +426,11 @@ async function getDashboardStats() {
 async function getMessagesChartData() {
   const [rows] = await getPool().query(`
         SELECT DATE_FORMAT(sent_at, '%a') as day, COUNT(*) as value
-        FROM message_logs
-        WHERE sent_at >= CURDATE() - INTERVAL 7 DAY
+        FROM (
+            SELECT sent_at FROM message_logs WHERE sent_at >= CURDATE() - INTERVAL 7 DAY
+            UNION ALL
+            SELECT sent_at FROM campaign_recipients WHERE sent_at >= CURDATE() - INTERVAL 7 DAY
+        ) as combined
         GROUP BY day
         ORDER BY MIN(sent_at)
     `);
@@ -430,8 +440,11 @@ async function getMessagesChartData() {
 async function getTodaysMessageStatus() {
   const [rows] = await getPool().query(`
         SELECT status, COUNT(*) as value
-        FROM message_logs
-        WHERE DATE(sent_at) = CURDATE()
+        FROM (
+            SELECT status, sent_at FROM message_logs WHERE DATE(sent_at) = CURDATE()
+            UNION ALL
+            SELECT status, sent_at FROM campaign_recipients WHERE DATE(sent_at) = CURDATE()
+        ) as combined
         GROUP BY status
     `);
 
