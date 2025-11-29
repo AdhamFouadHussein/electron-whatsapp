@@ -1,4 +1,4 @@
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+// const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 const fs = require('fs');
 const path = require('path');
 const { Boom } = require('@hapi/boom');
@@ -13,6 +13,7 @@ class WhatsAppService {
     const userDataPath = app ? app.getPath('userData') : process.cwd();
     this.sessionPath = path.join(userDataPath, 'whatsapp-session');
     this.status = 'disconnected';
+    this.DisconnectReason = null; // Will be loaded dynamically
   }
 
   setQRCallback(callback) {
@@ -33,18 +34,22 @@ class WhatsAppService {
 
   async connect() {
     try {
+      // Dynamically import Baileys (ESM module)
+      const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion } = await import('@whiskeysockets/baileys');
+      this.DisconnectReason = DisconnectReason;
+
       // Ensure session directory exists
       if (!fs.existsSync(this.sessionPath)) {
         fs.mkdirSync(this.sessionPath, { recursive: true });
       }
 
       const { state, saveCreds } = await useMultiFileAuthState(this.sessionPath);
-  // Fetch latest baileys version info (log it for diagnostics)
-  const versionInfo = await fetchLatestBaileysVersion();
-  // Some versions of the library return an object, others return an array/tuple.
-  // Normalize and log for debugging.
-  let version = versionInfo && versionInfo.version ? versionInfo.version : versionInfo && versionInfo[0] ? versionInfo[0] : versionInfo;
-  console.log('Baileys version info:', versionInfo);
+      // Fetch latest baileys version info (log it for diagnostics)
+      const versionInfo = await fetchLatestBaileysVersion();
+      // Some versions of the library return an object, others return an array/tuple.
+      // Normalize and log for debugging.
+      let version = versionInfo && versionInfo.version ? versionInfo.version : versionInfo && versionInfo[0] ? versionInfo[0] : versionInfo;
+      console.log('Baileys version info:', versionInfo);
 
       this.sock = makeWASocket({
         version,
@@ -77,9 +82,9 @@ class WhatsAppService {
               console.log('lastDisconnect.error:', lastDisconnect.error);
               // If the disconnect indicates a logged out session, don't reconnect.
               const err = lastDisconnect.error;
-              if (err === DisconnectReason.loggedOut ||
-                  (err && err.output && err.output.statusCode && String(err.output.statusCode) === String(DisconnectReason.loggedOut)) ||
-                  (err && err.message && String(err.message).toLowerCase().includes('logged out'))) {
+              if (err === this.DisconnectReason.loggedOut ||
+                (err && err.output && err.output.statusCode && String(err.output.statusCode) === String(this.DisconnectReason.loggedOut)) ||
+                (err && err.message && String(err.message).toLowerCase().includes('logged out'))) {
                 shouldReconnect = false;
               }
             }
@@ -131,15 +136,15 @@ class WhatsAppService {
   formatPhoneNumber(phone) {
     // Remove all non-numeric characters
     let cleaned = phone.replace(/\D/g, '');
-    
+
     // Add country code if not present (assuming international format)
-    if (!cleaned.startsWith('1') && !cleaned.startsWith('2') && !cleaned.startsWith('3') && 
-        !cleaned.startsWith('4') && !cleaned.startsWith('5') && !cleaned.startsWith('6') && 
-        !cleaned.startsWith('7') && !cleaned.startsWith('8') && !cleaned.startsWith('9')) {
+    if (!cleaned.startsWith('1') && !cleaned.startsWith('2') && !cleaned.startsWith('3') &&
+      !cleaned.startsWith('4') && !cleaned.startsWith('5') && !cleaned.startsWith('6') &&
+      !cleaned.startsWith('7') && !cleaned.startsWith('8') && !cleaned.startsWith('9')) {
       // If no country code, you might want to add a default one
       // Example: cleaned = '1' + cleaned; // for US numbers
     }
-    
+
     // WhatsApp uses the format: [country code][number]@s.whatsapp.net
     return `${cleaned}@s.whatsapp.net`;
   }
@@ -167,10 +172,10 @@ class WhatsAppService {
 
     try {
       const jid = this.formatPhoneNumber(phone);
-      
+
       // Read file
       const fileBuffer = fs.readFileSync(filePath);
-      
+
       // Determine message type based on mimetype
       let messageContent;
       if (mimetype.startsWith('image/')) {
@@ -223,7 +228,7 @@ class WhatsAppService {
 
     try {
       const jid = this.formatPhoneNumber(phone);
-      
+
       let messageContent;
       if (mimetype.startsWith('image/')) {
         messageContent = {

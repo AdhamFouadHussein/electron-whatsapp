@@ -19,7 +19,6 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/boom": "^10.0.1",
-    "@whiskeysockets/baileys": "^6.7.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
@@ -48,6 +47,7 @@
     "@radix-ui/react-toggle": "1.1.1",
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
+    "@whiskeysockets/baileys": "^7.0.0-rc.9",
     "autoprefixer": "^10.4.20",
     "axios": "^1.6.0",
     "class-variance-authority": "^0.7.1",
