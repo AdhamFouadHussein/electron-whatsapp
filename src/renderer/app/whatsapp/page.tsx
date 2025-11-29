@@ -1,14 +1,79 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MessageCircle, Wifi, WifiOff, RotateCcw, LogOut, AlertCircle } from "lucide-react"
+import { MessageCircle, Wifi, WifiOff, LogOut, AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import QRCode from "react-qr-code"
+import { api } from "@/lib/api"
+import { toast } from "sonner"
 
 export default function WhatsAppPage() {
-  const [isConnected, setIsConnected] = useState(false)
-  const [showQR, setShowQR] = useState(false)
+  const [status, setStatus] = useState<string>("disconnected")
+  const [qrCode, setQrCode] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    // Get initial status
+    const checkStatus = async () => {
+      try {
+        const currentStatus = await api.whatsapp.getStatus()
+        setStatus(currentStatus)
+      } catch (error) {
+        console.error("Failed to get status:", error)
+      }
+    }
+    checkStatus()
+
+    // Subscribe to status changes
+    api.whatsapp.onStatusChange((newStatus) => {
+      console.log("Status changed:", newStatus)
+      setStatus(newStatus)
+      if (newStatus === 'connected') {
+        setQrCode("")
+        setIsLoading(false)
+        toast.success("WhatsApp connected successfully!")
+      } else if (newStatus === 'disconnected') {
+        setIsLoading(false)
+      } else if (newStatus === 'qr_ready') {
+        setIsLoading(false)
+      }
+    })
+
+    // Subscribe to QR code updates
+    api.whatsapp.onQRCode((qr) => {
+      console.log("QR Code received")
+      setQrCode(qr)
+      setStatus('qr_ready')
+      setIsLoading(false)
+    })
+  }, [])
+
+  const handleConnect = async () => {
+    try {
+      setIsLoading(true)
+      await api.whatsapp.connect()
+    } catch (error) {
+      console.error("Failed to connect:", error)
+      toast.error("Failed to initiate connection")
+      setIsLoading(false)
+    }
+  }
+
+  const handleDisconnect = async () => {
+    try {
+      setIsLoading(true)
+      await api.whatsapp.disconnect()
+    } catch (error) {
+      console.error("Failed to disconnect:", error)
+      toast.error("Failed to disconnect")
+      setIsLoading(false)
+    }
+  }
+
+  const isConnected = status === 'connected'
+  const showQR = status === 'qr_ready' || (status === 'disconnected' && qrCode)
 
   return (
     <div className="space-y-8">
@@ -33,7 +98,9 @@ export default function WhatsAppPage() {
                 ) : (
                   <>
                     <WifiOff className="h-5 w-5 text-red-500" />
-                    <span className="text-lg font-medium text-red-600 dark:text-red-400">Disconnected</span>
+                    <span className="text-lg font-medium text-red-600 dark:text-red-400">
+                      {status === 'reconnecting' ? 'Reconnecting...' : 'Disconnected'}
+                    </span>
                   </>
                 )}
               </div>
@@ -47,30 +114,18 @@ export default function WhatsAppPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                  <p className="text-xs text-muted-foreground mb-1">Account Name</p>
-                  <p className="font-semibold">Business Account</p>
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <p className="font-semibold capitalize">{status}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                  <p className="text-xs text-muted-foreground mb-1">Phone Number</p>
-                  <p className="font-semibold">+966 50 XXX XXXX</p>
-                </div>
-                <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                  <p className="text-xs text-muted-foreground mb-1">Connected Since</p>
-                  <p className="font-semibold">Dec 5, 2024</p>
-                </div>
-                <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                  <p className="text-xs text-muted-foreground mb-1">Messages Sent</p>
-                  <p className="font-semibold">12,847</p>
+                  <p className="text-xs text-muted-foreground mb-1">Session</p>
+                  <p className="font-semibold">Active</p>
                 </div>
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="gap-2 bg-transparent">
-                  <RotateCcw className="h-4 w-4" />
-                  Reconnect
-                </Button>
-                <Button variant="destructive" className="gap-2" onClick={() => setIsConnected(false)}>
-                  <LogOut className="h-4 w-4" />
+                <Button variant="destructive" className="gap-2" onClick={handleDisconnect} disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
                   Disconnect
                 </Button>
               </div>
@@ -80,20 +135,24 @@ export default function WhatsAppPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  WhatsApp is not connected. Scan the QR code to connect your account.
+                  {status === 'reconnecting'
+                    ? "WhatsApp is attempting to reconnect..."
+                    : "WhatsApp is not connected. Scan the QR code to connect your account."}
                 </AlertDescription>
               </Alert>
 
-              <Button size="lg" className="w-full" onClick={() => setShowQR(true)}>
-                <MessageCircle className="h-5 w-5 mr-2" />
-                Connect WhatsApp
-              </Button>
+              {!showQR && status !== 'reconnecting' && (
+                <Button size="lg" className="w-full" onClick={handleConnect} disabled={isLoading}>
+                  {isLoading ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <MessageCircle className="h-5 w-5 mr-2" />}
+                  Connect WhatsApp
+                </Button>
+              )}
             </div>
           )}
         </Card>
 
-        {/* QR Code Modal */}
-        {showQR && (
+        {/* QR Code Modal/Section */}
+        {showQR && !isConnected && (
           <Card className="p-8 border-border/50 backdrop-blur-sm bg-card/50">
             <div className="max-w-md mx-auto text-center">
               <h3 className="text-lg font-semibold mb-4">Scan QR Code</h3>
@@ -101,25 +160,12 @@ export default function WhatsAppPage() {
                 Open WhatsApp on your phone and scan this QR code to connect
               </p>
 
-              {/* Placeholder QR */}
-              <div className="bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 p-8 rounded-lg mb-6 aspect-square flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-muted-foreground">QR</div>
-                  <p className="text-xs text-muted-foreground mt-2">Scan with WhatsApp</p>
-                </div>
+              <div className="bg-white p-4 rounded-lg mb-6 aspect-square flex items-center justify-center w-64 mx-auto">
+                <QRCode value={qrCode} size={200} />
               </div>
 
-              <div className="flex gap-3">
-                <Button
-                  className="flex-1"
-                  onClick={() => {
-                    setShowQR(false)
-                    setIsConnected(true)
-                  }}
-                >
-                  Connected
-                </Button>
-                <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setShowQR(false)}>
+              <div className="flex gap-3 justify-center">
+                <Button variant="outline" className="bg-transparent" onClick={() => setQrCode("")}>
                   Cancel
                 </Button>
               </div>
