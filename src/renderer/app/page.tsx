@@ -14,6 +14,10 @@ import {
   Pie,
   Cell,
   Legend,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
 } from "recharts"
 import { Users, Calendar, Bell, MessageSquare, LucideProps } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -58,20 +62,29 @@ export default function Dashboard() {
   const [chartData, setChartData] = useState([]);
   const [pieData, setPieData] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+  const [campaignStats, setCampaignStats] = useState<any[]>([]);
+  const [hourlyStats, setHourlyStats] = useState<any[]>([]);
+  const [topContacts, setTopContacts] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsData, messagesData, statusData, eventsData] = await Promise.all([
+        const [statsData, messagesData, statusData, eventsData, campaignData, hourlyData, contactsData] = await Promise.all([
           api.getDashboardStats(),
           api.getMessagesChartData(),
           api.getTodaysMessageStatus(),
-          api.getUpcomingEventsList(4)
+          api.getUpcomingEventsList(4),
+          api.getCampaignPerformanceStats(),
+          api.getHourlyActivityStats(),
+          api.getTopContactsStats()
         ]);
         setStats(statsData);
         setChartData(messagesData);
         setPieData(statusData);
         setUpcomingEvents(eventsData);
+        setCampaignStats(campaignData);
+        setHourlyStats(hourlyData);
+        setTopContacts(contactsData);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       }
@@ -171,45 +184,128 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/50">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold">Upcoming Events</h3>
-            <p className="text-sm text-muted-foreground">Next reminders to send</p>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/50">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold">Hourly Activity</h3>
+            <p className="text-sm text-muted-foreground">Peak messaging times (30 days)</p>
           </div>
-          <Button variant="outline" size="sm">
-            View All
-          </Button>
-        </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={hourlyStats}>
+              <defs>
+                <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="hour" stroke="var(--muted-foreground)" />
+              <YAxis stroke="var(--muted-foreground)" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "var(--card)",
+                  border: `1px solid var(--border)`,
+                  borderRadius: "8px",
+                  color: "var(--foreground)",
+                }}
+              />
+              <Area type="monotone" dataKey="count" stroke="var(--primary)" fillOpacity={1} fill="url(#colorCount)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Card>
 
-        <div className="space-y-3">
-          {upcomingEvents.map((event) => (
-            <div
-              key={event.id}
-              className="flex items-center justify-between rounded-lg border border-border/50 p-4 hover:bg-muted/50 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-accent to-primary" />
-                <div>
-                  <p className="font-medium">{event.user}</p>
-                  <p className="text-sm text-muted-foreground">{event.event}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(event.date), { addSuffix: true })}</span>
-                <div
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${event.status === "pending"
-                    ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
-                    : "bg-green-500/20 text-green-700 dark:text-green-400"
-                    }`}
-                >
-                  {event.status}
-                </div>
-              </div>
+        <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/50">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold">Recent Campaigns</h3>
+            <p className="text-sm text-muted-foreground">Performance of last 5 campaigns</p>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={campaignStats}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="name" stroke="var(--muted-foreground)" />
+              <YAxis stroke="var(--muted-foreground)" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "var(--card)",
+                  border: `1px solid var(--border)`,
+                  borderRadius: "8px",
+                  color: "var(--foreground)",
+                }}
+                cursor={{ fill: 'var(--muted)' }}
+              />
+              <Legend />
+              <Bar dataKey="sent_count" name="Sent" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="failed_count" name="Failed" fill="#ef4444" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <Card className="col-span-1 lg:col-span-2 p-6 border-border/50 backdrop-blur-sm bg-card/50">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold">Top Contacts</h3>
+            <p className="text-sm text-muted-foreground">Most active recipients</p>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={topContacts} layout="vertical" margin={{ left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+              <XAxis type="number" stroke="var(--muted-foreground)" />
+              <YAxis dataKey="name" type="category" width={100} stroke="var(--muted-foreground)" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "var(--card)",
+                  border: `1px solid var(--border)`,
+                  borderRadius: "8px",
+                  color: "var(--foreground)",
+                }}
+                cursor={{ fill: 'var(--muted)' }}
+              />
+              <Bar dataKey="count" name="Messages" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={32} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="p-6 border-border/50 backdrop-blur-sm bg-card/50">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">Upcoming Events</h3>
+              <p className="text-sm text-muted-foreground">Next reminders to send</p>
             </div>
-          ))}
-        </div>
-      </Card>
+            <Button variant="outline" size="sm">
+              View All
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {upcomingEvents.map((event) => (
+              <div
+                key={event.id}
+                className="flex items-center justify-between rounded-lg border border-border/50 p-4 hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-accent to-primary" />
+                  <div>
+                    <p className="font-medium">{event.user}</p>
+                    <p className="text-sm text-muted-foreground">{event.event}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(event.date), { addSuffix: true })}</span>
+                  <div
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${event.status === "pending"
+                      ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400"
+                      : "bg-green-500/20 text-green-700 dark:text-green-400"
+                      }`}
+                  >
+                    {event.status}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }

@@ -464,6 +464,60 @@ async function getTodaysMessageStatus() {
   }));
 }
 
+async function getCampaignPerformanceStats() {
+  const [rows] = await getPool().query(`
+    SELECT name, sent_count, failed_count 
+    FROM campaigns 
+    ORDER BY created_at DESC 
+    LIMIT 5
+  `);
+  return rows;
+}
+
+async function getHourlyActivityStats() {
+  const [rows] = await getPool().query(`
+    SELECT HOUR(sent_at) as hour, COUNT(*) as count
+    FROM (
+      SELECT sent_at FROM message_logs WHERE sent_at >= NOW() - INTERVAL 30 DAY
+      UNION ALL
+      SELECT sent_at FROM campaign_recipients WHERE sent_at >= NOW() - INTERVAL 30 DAY
+    ) as combined
+    GROUP BY hour
+    ORDER BY hour
+  `);
+
+  // Fill in missing hours
+  const result = Array.from({ length: 24 }, (_, i) => ({ hour: i, count: 0 }));
+  rows.forEach(row => {
+    result[row.hour].count = row.count;
+  });
+
+  return result.map(r => ({
+    hour: `${r.hour}:00`,
+    count: r.count
+  }));
+}
+
+async function getTopContactsStats() {
+  // Try to join with users table if possible, otherwise just use phone
+  // We'll do a best effort to get names
+  const [rows] = await getPool().query(`
+    SELECT 
+      COALESCE(MAX(u.name), combined.phone) as name, 
+      COUNT(*) as count
+    FROM (
+      SELECT phone, user_id FROM message_logs
+      UNION ALL
+      SELECT phone, NULL as user_id FROM campaign_recipients
+    ) as combined
+    LEFT JOIN users u ON combined.user_id = u.id OR combined.phone = u.phone
+    GROUP BY combined.phone
+    ORDER BY count DESC
+    LIMIT 5
+  `);
+  return rows;
+}
+
 // ...existing code...
 async function getUpcomingEventsList(limit = 4) {
   const [rows] = await getPool().query(`
@@ -670,6 +724,9 @@ module.exports = {
   getMessagesChartData,
   getTodaysMessageStatus,
   getUpcomingEventsList,
+  getCampaignPerformanceStats,
+  getHourlyActivityStats,
+  getTopContactsStats,
 
   // Users
   getUsers,

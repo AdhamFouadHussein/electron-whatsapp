@@ -10,6 +10,9 @@ declare global {
                 getMessagesChartData: () => Promise<any>;
                 getTodaysMessageStatus: () => Promise<any>;
                 getUpcomingEventsList: (limit: number) => Promise<any[]>;
+                getCampaignPerformanceStats: () => Promise<any[]>;
+                getHourlyActivityStats: () => Promise<any[]>;
+                getTopContactsStats: () => Promise<any[]>;
 
                 // Users
                 getUsers: () => Promise<any[]>;
@@ -58,7 +61,7 @@ declare global {
                 create: (campaign: any) => Promise<any>;
                 getAll: () => Promise<any[]>;
                 get: (id: number) => Promise<any>;
-                parseCSV: (csvContent: string) => Promise<any[]>;
+                parseCSV: (csvContent: string) => Promise<any>;
                 addRecipients: (data: { campaignId: number; recipients: any[] }) => Promise<any>;
                 getRecipients: (campaignId: number) => Promise<any[]>;
                 start: (campaignId: number) => Promise<any>;

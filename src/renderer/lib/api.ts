@@ -3,6 +3,9 @@ export const api = {
     getMessagesChartData: () => window.api.db.getMessagesChartData(),
     getTodaysMessageStatus: () => window.api.db.getTodaysMessageStatus(),
     getUpcomingEventsList: (limit: number): Promise<any[]> => window.api.db.getUpcomingEventsList(limit),
+    getCampaignPerformanceStats: (): Promise<any[]> => window.api.db.getCampaignPerformanceStats(),
+    getHourlyActivityStats: (): Promise<any[]> => window.api.db.getHourlyActivityStats(),
+    getTopContactsStats: (): Promise<any[]> => window.api.db.getTopContactsStats(),
 
     // User management
     getUsers: (): Promise<any[]> => window.api.db.getUsers(),

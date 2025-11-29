@@ -196,6 +196,18 @@ ipcMain.handle('db:getUpcomingEventsList', async (event, limit) => {
   return await dbOps.getUpcomingEventsList(limit);
 });
 
+ipcMain.handle('db:getCampaignPerformanceStats', async () => {
+  return await dbOps.getCampaignPerformanceStats();
+});
+
+ipcMain.handle('db:getHourlyActivityStats', async () => {
+  return await dbOps.getHourlyActivityStats();
+});
+
+ipcMain.handle('db:getTopContactsStats', async () => {
+  return await dbOps.getTopContactsStats();
+});
+
 // WhatsApp IPC handlers
 ipcMain.handle('whatsapp:connect', async () => {
   try {

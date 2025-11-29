@@ -16,6 +16,9 @@ contextBridge.exposeInMainWorld('api', {
     getMessagesChartData: () => ipcRenderer.invoke('db:getMessagesChartData'),
     getTodaysMessageStatus: () => ipcRenderer.invoke('db:getTodaysMessageStatus'),
     getUpcomingEventsList: (limit) => ipcRenderer.invoke('db:getUpcomingEventsList', limit),
+    getCampaignPerformanceStats: () => ipcRenderer.invoke('db:getCampaignPerformanceStats'),
+    getHourlyActivityStats: () => ipcRenderer.invoke('db:getHourlyActivityStats'),
+    getTopContactsStats: () => ipcRenderer.invoke('db:getTopContactsStats'),
 
     getEvents: (userId) => ipcRenderer.invoke('db:getEvents', userId),
     createEvent: (event) => ipcRenderer.invoke('db:createEvent', event),
