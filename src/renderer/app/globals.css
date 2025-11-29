@@ -1,5 +1,26 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* Required for shadcn/ui components */
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}
+
+@layer utilities {
+  .radix-side-top {
+    animation: slide-down 0.2s ease-out;
+  }
+
+  .radix-side-bottom {
+    animation: slide-up 0.2s ease-out;
+  }
+}
+
+/* your dark mode variant */
 @custom-variant dark (&:is(.dark *));
 
 :root {

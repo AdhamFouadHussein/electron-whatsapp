@@ -241,36 +241,43 @@ export default function CampaignsPage() {
                         Resume
                       </Button>
                     )}
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {campaign.status === 'draft' && (
-                            <DropdownMenuItem
-                              className="gap-2 cursor-pointer"
-                              onClick={() => toast({ title: "Info", description: "Edit functionality coming soon" })}
-                            >
-                              <Edit className="h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                          )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="end">
+                        {campaign.status === "draft" && (
                           <DropdownMenuItem
-                            className="gap-2 cursor-pointer text-red-600"
-                            onClick={() => handleDelete(campaign.id)}
+                            className="gap-2 cursor-pointer"
+                            onClick={() =>
+                              toast({
+                                title: "Info",
+                                description: "Edit functionality coming soon",
+                              })
+                            }
                           >
-                            <Trash2 className="h-4 w-4" />
-                            Delete
+                            <Edit className="h-4 w-4" />
+                            Edit
                           </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                        )}
+
+                        <DropdownMenuItem
+                          className="gap-2 cursor-pointer text-red-600"
+                          onClick={() => handleDelete(campaign.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
                   </div>
                 </div>
 
