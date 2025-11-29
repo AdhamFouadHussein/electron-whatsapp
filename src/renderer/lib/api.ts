@@ -48,5 +48,18 @@ export const api = {
 
     // Message logs
     getMessageLogs: (userId?: number): Promise<any[]> => window.api.db.getMessageLogs(userId),
+
+    // Birthdays
+    getUpcomingBirthdays: (daysAhead: number): Promise<any[]> => window.api.db.getUpcomingBirthdays(daysAhead),
+
+    whatsapp: {
+        connect: () => window.api.whatsapp.connect(),
+        disconnect: () => window.api.whatsapp.disconnect(),
+        getStatus: () => window.api.whatsapp.getStatus(),
+        sendMessage: (phone: string, message: string, fileId?: number) => window.api.whatsapp.sendMessage(phone, message, fileId),
+        sendBirthdayWish: (userId: number) => window.api.whatsapp.sendBirthdayWish(userId),
+        onQRCode: (callback: (qr: string) => void) => window.api.whatsapp.onQRCode(callback),
+        onStatusChange: (callback: (status: string) => void) => window.api.whatsapp.onStatusChange(callback),
+    }
 };
 

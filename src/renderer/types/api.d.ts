@@ -49,6 +49,9 @@ declare global {
 
                 // Message Logs
                 getMessageLogs: (userId?: number) => Promise<any[]>;
+
+                // Birthdays
+                getUpcomingBirthdays: (daysAhead: number) => Promise<any[]>;
             };
 
             campaign: {
@@ -70,6 +73,7 @@ declare global {
                 disconnect: () => Promise<void>;
                 getStatus: () => Promise<string>;
                 sendMessage: (phone: string, message: string, fileId?: number) => Promise<any>;
+                sendBirthdayWish: (userId: number) => Promise<any>;
                 onQRCode: (callback: (qr: string) => void) => void;
                 onStatusChange: (callback: (status: string) => void) => void;
             };
