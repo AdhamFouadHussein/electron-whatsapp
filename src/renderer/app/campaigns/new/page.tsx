@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Save, Users, Upload, FileUp } from 'lucide-react';
+import { ArrowLeft, Save, Users, Upload, FileUp, Copy } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface User {
@@ -24,9 +24,10 @@ interface CsvRecipient {
 
 interface NewCampaignPageProps {
   editId?: number;
+  duplicateId?: number;
 }
 
-export default function NewCampaignPage({ editId }: NewCampaignPageProps) {
+export default function NewCampaignPage({ editId, duplicateId }: NewCampaignPageProps) {
   const { setCurrentPage } = useNavigation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -46,10 +47,12 @@ export default function NewCampaignPage({ editId }: NewCampaignPageProps) {
       const fetchedUsers = await loadUsers();
       if (editId && fetchedUsers) {
         await loadCampaign(editId, fetchedUsers);
+      } else if (duplicateId && fetchedUsers) {
+        await loadCampaign(duplicateId, fetchedUsers, true);
       }
     };
     init();
-  }, [editId]);
+  }, [editId, duplicateId]);
 
   const loadUsers = async () => {
     try {
@@ -67,14 +70,14 @@ export default function NewCampaignPage({ editId }: NewCampaignPageProps) {
     }
   };
 
-  const loadCampaign = async (id: number, currentUsers: User[]) => {
+  const loadCampaign = async (id: number, currentUsers: User[], isDuplicate = false) => {
     try {
       setIsLoading(true);
       const campaign = await api.getCampaign(id);
       const recipients = await api.getCampaignRecipients(id);
 
       setFormData({
-        name: campaign.name,
+        name: isDuplicate ? `${campaign.name} (Copy)` : campaign.name,
         messageTemplate: campaign.message_text,
         scheduledTime: '',
       });
@@ -243,8 +246,12 @@ export default function NewCampaignPage({ editId }: NewCampaignPageProps) {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{editId ? 'Edit Campaign' : 'New Campaign'}</h1>
-          <p className="text-muted-foreground">{editId ? 'Edit existing campaign' : 'Create a new messaging campaign'}</p>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {editId ? 'Edit Campaign' : duplicateId ? 'Duplicate Campaign' : 'New Campaign'}
+          </h1>
+          <p className="text-muted-foreground">
+            {editId ? 'Edit existing campaign' : duplicateId ? 'Create a copy of an existing campaign' : 'Create a new messaging campaign'}
+          </p>
         </div>
       </div>
 
@@ -427,8 +434,8 @@ export default function NewCampaignPage({ editId }: NewCampaignPageProps) {
               <>Saving...</>
             ) : (
               <>
-                <Save className="mr-2 h-4 w-4" />
-                {editId ? 'Update Campaign' : 'Create Campaign'}
+                {duplicateId ? <Copy className="mr-2 h-4 w-4" /> : <Save className="mr-2 h-4 w-4" />}
+                {editId ? 'Update Campaign' : duplicateId ? 'Create Copy' : 'Create Campaign'}
               </>
             )}
           </Button>

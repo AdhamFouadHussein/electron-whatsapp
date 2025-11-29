@@ -121,6 +121,11 @@ const AppContent: React.FC = () => {
             return <NewCampaignPage editId={campaignId} />;
         }
 
+        if (currentPage.startsWith('campaigns/duplicate/')) {
+            const campaignId = parseInt(currentPage.split('/').pop() || '0');
+            return <NewCampaignPage duplicateId={campaignId} />;
+        }
+
         if (currentPage.startsWith('templates/edit/')) {
             const templateId = parseInt(currentPage.split('/').pop() || '0');
             return <NewTemplatePage editId={templateId} />;

@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Edit, Trash2, MoreVertical, Play, Pause, Loader2 } from "lucide-react"
+import { Search, Plus, Edit, Trash2, MoreVertical, Play, Pause, Loader2, Copy } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { api } from "@/lib/api"
@@ -265,6 +265,17 @@ export default function CampaignsPage() {
                             Edit
                           </DropdownMenuItem>
                         )}
+
+                        <DropdownMenuItem
+                          className="gap-2 cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentPage(`campaigns/duplicate/${campaign.id}`);
+                          }}
+                        >
+                          <Copy className="h-4 w-4" />
+                          Duplicate
+                        </DropdownMenuItem>
 
                         <DropdownMenuItem
                           className="gap-2 cursor-pointer text-red-600"
